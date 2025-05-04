@@ -11,13 +11,14 @@
   },
   "main": "dist/index.js",
   "scripts": {
-    "dev": "bun run src/index.ts --watch",
+    "dev": "tsx watch src/index.ts",
     "start": "node .",
     "build": "tsup src/index.ts --minify",
     "format": "prettier --write \"**/*.{json,ts}\"",
     "lint": "eslint . --ext ts --fix"
   },
   "dependencies": {
+    "ai": "^4.3.13",
     "discord.js": "^14.7.1",
     "dotenv": "^16.0.3"
   },
