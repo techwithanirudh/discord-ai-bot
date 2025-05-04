@@ -1,21 +1,17 @@
 {
-  "name": "discord-bot-template",
+  "name": "discord-ai-bot",
   "version": "1.0.0",
   "description": "A Discord bot boilerplate including TypeScript and ESLint.",
-  "author": {
-    "email": "fellipeutaka@gmail.com",
-    "name": "Fellipe Utaka"
-  },
   "license": "MIT",
   "private": true,
-  "homepage": "https://github.com/fellipeutaka/discord-bot-template",
+  "homepage": "https://github.com/techwithanirudh/discord-ai-bot",
   "repository": {
     "type": "git",
-    "url": "https://github.com/fellipeutaka/discord-bot-template.git"
+    "url": "https://github.com/techwithanirudh/discord-ai-bot.git"
   },
   "main": "dist/index.js",
   "scripts": {
-    "dev": "tsx watch src/index.ts",
+    "dev": "bun run src/index.ts --watch",
     "start": "node .",
     "build": "tsup src/index.ts --minify",
     "format": "prettier --write \"**/*.{json,ts}\"",
@@ -37,6 +33,8 @@
     "prettier": "^2.8.4",
     "tsup": "^6.6.0",
     "tsx": "^3.12.3",
-    "typescript": "^4.9.5"
-  }
+    "typescript": "^4.9.5",
+    "@types/bun": "latest"
+  },
+  "packageManager": "pnpm@10.10.0+sha512.d615db246fe70f25dcfea6d8d73dee782ce23e2245e3c4f6f888249fb568149318637dca73c2c5c8ef2a4ca0d5657fb9567188bfab47f566d1ee6ce987815c39"
 }
