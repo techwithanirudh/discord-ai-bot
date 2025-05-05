@@ -8,6 +8,7 @@ import { getTimeInCity } from "@/utils/time";
 import { normalize, sentences } from "@/utils/tokenize-messages";
 import { z } from "zod";
 import { convertToCoreMessages } from "@/utils/messages";
+import { reply } from "@/utils/delay";
 import logger from "@/lib/logger";
 import { checkProbability } from "./methods/check-probability";
 
@@ -46,9 +47,7 @@ export async function execute(message: Message) {
     if (result?.probability <= 0.5) return;
   }
 
-  logger.info(`Query: ${question}`)
-
-  channel.sendTyping();
+  logger.info(`Query: ${question}`);
 
   const { text } = await generateText({
     model: myProvider.languageModel("chat-model"),
@@ -68,9 +67,8 @@ export async function execute(message: Message) {
     }),
   });
 
-  const replies = normalize(sentences(text));
-
   logger.info(convertToCoreMessages(messages), "Messages");
-  logger.info(`Answer: ${replies}`);
-  replies.forEach((reply) => message.reply(reply));
+  logger.info(`Answer: ${text}`);
+
+  await reply(message, text);
 }
