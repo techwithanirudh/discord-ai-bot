@@ -1,16 +1,12 @@
 import { generateObject, type CoreMessage } from "ai";
 import { systemPrompt, type RequestHints } from "@/lib/ai/prompts";
 import { myProvider } from "@/lib/ai/providers";
-import logger from "@/lib/logger";
-import { probabilitySchema } from "@/lib/validators";
+import { probabilitySchema, type Probability } from "@/lib/validators";
 
-export async function checkProbability({
-  messages,
-  requestHints,
-}: {
-  messages: CoreMessage[];
-  requestHints: RequestHints;
-}) {
+export async function assessRelevance(
+  messages: CoreMessage[],
+  hints: RequestHints
+): Promise<Probability> {
   try {
     const { object } = await generateObject({
       model: myProvider.languageModel("artifact-model"),
@@ -18,16 +14,12 @@ export async function checkProbability({
       schema: probabilitySchema,
       system: systemPrompt({
         selectedChatModel: "artifact-model",
-        requestHints,
+        requestHints: hints,
       }),
-      // for hackclub ai, comment out if you're using a different provider
       mode: "json",
     });
-
     return object;
-  } catch (e) {
-    logger.error(e, "Failed to fetch probability");
-
+  } catch {
     return {
       probability: 0.5,
       reason: "Oops! Something went wrong, please try again later",

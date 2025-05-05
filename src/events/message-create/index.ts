@@ -1,20 +1,18 @@
 import { Events, Message } from "discord.js";
 import { keywords, city, country, timezone } from "@/lib/constants";
-import { generateText } from "ai";
-import { myProvider } from "@/lib/ai/providers";
 import { getChannelName, getMessagesByChannel } from "@/lib/queries";
-import { systemPrompt, type RequestHints } from "@/lib/ai/prompts";
 import { getTimeInCity } from "@/utils/time";
 import { convertToCoreMessages } from "@/utils/messages";
-import { reply } from "@/utils/delay";
-import logger from "@/lib/logger";
-import { checkProbability } from "./methods/check-probability";
+import { assessRelevance } from "./utils/relevance";
+import { sendReply } from "./utils/respond";
 import {
-  incrementMessageCount,
-  resetMessageCount,
-  quotaCheck,
-} from "@/utils/message-counter";
-import { ratelimit } from "@/lib/kv";
+  accrueUnprompted,
+  clearUnprompted,
+  hasUnpromptedQuota,
+} from "@/utils/unprompted-counter";
+import { type RequestHints } from "@/lib/ai/prompts";
+import { ratelimit, redisKeys } from "@/lib/kv";
+import logger from "@/lib/logger";
 
 export const name = Events.MessageCreate;
 export const once = false;
@@ -23,68 +21,65 @@ export async function execute(message: Message) {
   if (message.author.bot) return;
 
   const { channel, content, mentions, client, guild, author } = message;
-  const contextId = guild?.id ?? channel.id;
+  const ctxId = guild?.id ?? channel.id;
 
-  const messages = await getMessagesByChannel({ channel, limit: 50 });
-  const coreMessages = convertToCoreMessages(messages);
+  const replyAllowed = (await ratelimit.limit(redisKeys.channelCount(ctxId)))
+    .success;
+  if (!replyAllowed) {
+    logger.info(`Message Limit tripped in ${ctxId}`);
+    return;
+  }
 
-  const botMentioned = client.user ? mentions.users.has(client.user.id) : false;
+  const botId = client.user?.id;
+  const isPing = botId ? mentions.users.has(botId) : false;
   const hasKeyword = keywords.some((k) =>
     content.toLowerCase().includes(k.toLowerCase())
   );
 
-  const requestHints: RequestHints = {
+  logger.info(
+    { ctxId, user: author.username, isPing, hasKeyword, content },
+    "Incoming message"
+  );
+
+  /* ---------- Explicit trigger (ping / keyword) ------------------------- */
+  if (isPing || hasKeyword) {
+    await clearUnprompted(ctxId); // reset idle quota
+    logger.info(`Trigger detected — counter cleared for ${ctxId}`);
+    await sendReply(message); // immediate reply
+    return;
+  }
+
+  /* ---------- Idle‑chatter branch -------------------------------------- */
+  const idleCount = await accrueUnprompted(ctxId);
+  logger.debug(`Idle counter for ${ctxId}: ${idleCount}`);
+
+  if (!(await hasUnpromptedQuota(ctxId))) {
+    logger.info(`Idle quota exhausted in ${ctxId} — staying silent`);
+    return;
+  }
+
+  /* Relevance check happens ONLY in this branch (no trigger) */
+  const messages = await getMessagesByChannel({ channel, limit: 50 });
+  const coreMessages = convertToCoreMessages(messages);
+
+  const hints: RequestHints = {
     channel: getChannelName(channel),
     time: getTimeInCity(timezone),
     city,
     country,
     server: guild?.name ?? "DM",
   };
-  
-  if (botMentioned || hasKeyword) {
-    const { success, reset } = await ratelimit.limit(`user:${author.id}`)
 
-    if (!success) {
-      logger.info(
-        `Rate limit exceeded for user ${author.username}. Resets at ${new Date(reset)}`
-      );
-      return;
-    }
+  const { probability, reason } = await assessRelevance(coreMessages, hints);
+  logger.info(`Relevance for ${ctxId}: ${reason}; p=${probability}`);
+
+  if (probability <= 0.5) {
+    logger.debug("Low relevance — ignoring");
+    return;
   }
 
-  if (botMentioned || hasKeyword) {
-    await resetMessageCount(contextId);
-  } else {
-    await incrementMessageCount(contextId);
-    if (!(await quotaCheck(contextId))) return;
-
-    const { probability } = await checkProbability({
-      messages: coreMessages,
-      requestHints,
-    });
-    logger.info(`Relevance: ${probability}`);
-    if (probability <= 0.5) return;
-  }
-
-  logger.info(`Query: ${content}`);
-
-  const { text } = await generateText({
-    model: myProvider.languageModel("chat-model"),
-    messages: [
-      ...coreMessages,
-      {
-        role: "system",
-        content:
-          "Respond to the following message just like you would in a casual chat. It's not a question; think of it as a conversation starter.\n" +
-          "Share your thoughts or just chat about it, as if you've stumbled upon an interesting topic in a group discussion.",
-      },
-    ],
-    system: systemPrompt({
-      selectedChatModel: "chat-model",
-      requestHints,
-    }),
-  });
-
-  logger.info(`Answer: ${text}`);
-  await reply(message, text);
+  /* Relevance high → speak & reset idle counter */
+  await clearUnprompted(ctxId);
+  logger.info(`Replying in ${ctxId}; idle counter reset`);
+  await sendReply(message, coreMessages, hints);
 }

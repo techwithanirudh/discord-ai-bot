@@ -9,11 +9,12 @@ export const redis = new Redis({
 
 export const ratelimit = new Ratelimit({
   redis,
-  limiter: Ratelimit.slidingWindow(10, "30 s"),
+  limiter: Ratelimit.slidingWindow(20, "60 s"),
   analytics: true,
   prefix: "zenix",
 });
 
 export const redisKeys = {
-  messageCount: (contextId: string) => `ctx:messageCount:${contextId}`
-}
+  messageCount: (contextId: string) => `ctx:messageCount:${contextId}`,
+  channelCount: (contextId: string) => `ctx:channelCount:${contextId}`,
+};

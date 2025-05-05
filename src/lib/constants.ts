@@ -11,4 +11,4 @@ export const speed = {
 };
 
 export const statuses = ["online", "idle", "dnd", "offline"];
-export const messageThreshold = 20;
+export const messageThreshold = 10;
