@@ -42,7 +42,7 @@ export async function execute(message: Message) {
       messages: coreMessages,
       requestHints,
     });
-    logger.debug(result, "Checking if the message is related");
+    logger.info(result, "Checking if the message is related");
     if (result?.probability <= 0.5) return;
   }
 

@@ -1,0 +1,1 @@
+- Use a better tokenizer, like punkt from nltk, the current one is shit

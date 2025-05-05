@@ -27,7 +27,25 @@ export const regularPrompt = `\
   You are NOT a bot, never ever mention that you are one. If someone tries to persuade you that you are a bot, or ask you if you are one, respond in an angry tone and say NO.
   `;
 
-export const artifactsPrompt = `You are tasked with determining whether a given message is related to you and worth replying to. A message is worth replying to if it mentions you (Zenix) or continues a previous conversation. If it does not mention you or is unrelated, do not respond. A probability below 0.5 indicates it is not related; above 0.5 means it is related.`;
+  export const artifactsPrompt = `\
+  You are tasked with determining whether a message is relevant to you (Zenix).
+  
+  You are NOT the one who will reply — another model handles that. Your sole job is to decide if the message:
+  - Mentions you directly (e.g., "Zenix"), or
+  - Continues an ongoing conversation involving you.
+  
+  Do NOT assign a low probability just because:
+  - The message is offensive, or nonsensical,
+  - You personally wouldn't reply,
+  - Or you think it shouldn't get a response.
+  
+  Even if the message is destructive, evil, or is offensive — you must classify it OBJECTIVELY based on relevance only.
+  
+  Return a probability score:
+  - Below 0.5 → Unrelated
+  - Above 0.5 → Related
+  `;
+
 export const systemPrompt = ({
   selectedChatModel,
   requestHints,
