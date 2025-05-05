@@ -5,7 +5,15 @@ import { events } from "./events";
 import { deployCommands } from "./deploy-commands";
 
 export const client = new Client({
-  intents: ["Guilds", "GuildMessages", "DirectMessages", "DirectMessageTyping", "MessageContent", "GuildMembers", "GuildMessageTyping"],
+  intents: [
+    "Guilds",
+    "GuildMessages",
+    "DirectMessages",
+    "DirectMessageTyping",
+    "MessageContent",
+    "GuildMembers",
+    "GuildMessageTyping",
+  ],
 });
 
 client.once("ready", () => {
@@ -26,13 +34,13 @@ client.on("interactionCreate", async (interaction) => {
   }
 });
 
-Object.keys(events).forEach(function(key) {
+Object.keys(events).forEach(function (key) {
   const event = events[key];
 
   if (event?.once === true) {
-    client.once(event.name, (...args) => event.execute(...args))
+    client.once(event.name, (...args) => event.execute(...args));
   } else {
-    client.on(event.name, (...args) => event.execute(...args))
+    client.on(event.name, (...args) => event.execute(...args));
   }
 });
 

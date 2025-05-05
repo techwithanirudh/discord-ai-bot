@@ -1,1 +1,1 @@
-export const KEYWORDS = ['zenix', 'ai', 'bot']
+export const KEYWORDS = ["zenix", "ai", "bot"];
