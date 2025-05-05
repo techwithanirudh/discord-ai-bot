@@ -29,6 +29,7 @@
     "date-fns": "^4.1.0",
     "discord.js": "^14.7.1",
     "dotenv": "^16.0.3",
+    "natural": "^8.0.1",
     "pino": "^9.6.0",
     "pino-pretty": "^13.0.0",
     "sbd": "^1.0.19",

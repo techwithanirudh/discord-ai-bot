@@ -1,1 +1,2 @@
 - Use a better tokenizer, like punkt from nltk, the current one is shit
+- also when a user is talking like if they send other message interrupt sending first one

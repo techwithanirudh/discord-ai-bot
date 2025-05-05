@@ -70,7 +70,7 @@ export async function execute(message: Message) {
 
   const replies = normalize(sentences(text));
 
-  logger.debug(convertToCoreMessages(messages), "Messages");
-  logger.info(`Answer: ${replies.join(',')}`);
+  logger.info(convertToCoreMessages(messages), "Messages");
+  logger.info(`Answer: ${replies}`);
   replies.forEach((reply) => message.reply(reply));
 }
