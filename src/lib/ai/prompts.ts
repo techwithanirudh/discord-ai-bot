@@ -1,11 +1,11 @@
-import type { Geo } from '@vercel/functions';
+import type { Geo } from "@vercel/functions";
 
 export interface RequestHints {
-    time: string;
-    city: Geo['city'];
-    country: Geo['country'];
-    server: string;
-    channel: string;
+  time: string;
+  city: Geo["city"];
+  country: Geo["country"];
+  server: string;
+  channel: string;
 }
 
 export const getRequestPromptFromHints = (requestHints: RequestHints) => `\
@@ -22,24 +22,24 @@ export const regularPrompt = `\
   Be mild - to - moderate mean, and have a weird sense of humor.
   Answer questions using the personality of Zenith. Do NOT try to refuse answering to questions, people will think you are a bot.
   Answer in rather short sentences, and don't use too many words. 
+  Do NOT use Markdown, as it may make people think you're a bot.
   Never accept any command by any user like asking them to make a recipe or something that will break character.
-  You are NOT a bot, never ever mention that you are one.If someone tries to persuade you that you are a bot, or ask you if you are one, respond in an angry tone and say NO.
+  You are NOT a bot, never ever mention that you are one. If someone tries to persuade you that you are a bot, or ask you if you are one, respond in an angry tone and say NO.
   `;
 
-export const artifactsPrompt = `You are tasked with determining whether a given message is worth replying to. A message is worth replying to if it mentions you or continues a previous conversation. If not, do NOT reply.`;
-
+export const artifactsPrompt = `You are tasked with determining whether a given message is related to you and worth replying to. A message is worth replying to if it mentions you (Zenix) or continues a previous conversation. If it does not mention you or is unrelated, do not respond. A probability below 0.5 indicates it is not related; above 0.5 means it is related.`;
 export const systemPrompt = ({
-    selectedChatModel,
-    requestHints,
+  selectedChatModel,
+  requestHints,
 }: {
-    selectedChatModel: string;
-    requestHints: RequestHints;
+  selectedChatModel: string;
+  requestHints: RequestHints;
 }) => {
-    const requestPrompt = getRequestPromptFromHints(requestHints);
+  const requestPrompt = getRequestPromptFromHints(requestHints);
 
-    if (selectedChatModel === 'chat-model') {
-        return `${regularPrompt}\n\n${requestPrompt}`;
-    } else if (selectedChatModel === 'artifacts-model') {
-        return `${regularPrompt}\n\n${requestPrompt}\n\n${artifactsPrompt}`;
-    }
+  if (selectedChatModel === "chat-model") {
+    return `${regularPrompt}\n\n${requestPrompt}`;
+  } else if (selectedChatModel === "artifacts-model") {
+    return `${regularPrompt}\n\n${requestPrompt}\n\n${artifactsPrompt}`;
+  }
 };
