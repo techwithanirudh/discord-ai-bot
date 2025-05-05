@@ -5,6 +5,7 @@ import { myProvider } from "@/lib/ai/providers";
 import { convertToAIMessages, getChannelName, getMessagesByChannel } from "@/lib/queries";
 import { systemPrompt, type RequestHints } from "@/lib/ai/prompts";
 import { city, country, getTimeInCity, timezone } from "@/lib/time";
+import { normalize, sentences } from "@/lib/tokenize-messages";
 
 export const name = Events.MessageCreate;
 export const once = false;
@@ -33,6 +34,7 @@ export async function execute(message: Message) {
   };
 
   channel.sendTyping();
+
   const { text } = await generateText({
     model: myProvider.languageModel("chat-model"),
     messages: [...convertToAIMessages(messages)],
@@ -42,7 +44,11 @@ export async function execute(message: Message) {
     }),
   });
 
+  const replies = normalize(sentences(text))
+
   console.log("Messages", requestHints, convertToAIMessages(messages));
-  console.log("Replied with", text);
-  message.reply(text);
+  console.log("Replied with", replies);
+  replies.forEach(reply => (
+    message.reply(reply)
+  ))
 }
