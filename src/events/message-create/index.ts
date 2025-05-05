@@ -1,13 +1,15 @@
 import { Client, Events, Message, type ClientEvents } from "discord.js";
-import { KEYWORDS } from "@/lib/constants";
+import { keywords, city, country, timezone } from "@/lib/constants";
 import { generateObject, generateText, type CoreMessage } from "ai";
 import { myProvider } from "@/lib/ai/providers";
 import { getChannelName, getMessagesByChannel } from "@/lib/queries";
 import { systemPrompt, type RequestHints } from "@/lib/ai/prompts";
-import { city, country, getTimeInCity, timezone } from "@/utils/time";
+import { getTimeInCity } from "@/utils/time";
 import { normalize, sentences } from "@/utils/tokenize-messages";
 import { z } from "zod";
 import { convertToCoreMessages } from "@/utils/messages";
+import logger from "@/lib/logger";
+import { checkProbability } from "./methods/check-probability";
 
 export const name = Events.MessageCreate;
 export const once = false;
@@ -16,14 +18,14 @@ export async function execute(message: Message) {
   if (message.author.bot) return;
 
   const channel = message?.channel;
-  const content = message?.content;
+  const question = message?.content;
   const messages = await getMessagesByChannel({ channel, limit: 50 });
 
   const coreMessages = convertToCoreMessages(messages);
 
   const botWasMentioned = message.mentions.users.has(message.client.user.id);
-  const containsKeyword = KEYWORDS.some((word) =>
-    content.toLowerCase().includes(word.toLowerCase())
+  const containsKeyword = keywords.some((word) =>
+    question.toLowerCase().includes(word.toLowerCase())
   );
 
   const time = getTimeInCity(timezone);
@@ -40,9 +42,11 @@ export async function execute(message: Message) {
       messages: coreMessages,
       requestHints,
     });
-    console.log(result);
+    logger.debug(result, "Checking if the message is related");
     if (result?.probability <= 0.5) return;
   }
+
+  logger.info(`Query: ${question}`)
 
   channel.sendTyping();
 
@@ -66,49 +70,7 @@ export async function execute(message: Message) {
 
   const replies = normalize(sentences(text));
 
-  // console.log("Messages", requestHints, convertToCoreMessages(messages));
-  console.log("Replied with", replies);
+  logger.debug(convertToCoreMessages(messages), "Messages");
+  logger.info(`Answer: ${replies.join(',')}`);
   replies.forEach((reply) => message.reply(reply));
-}
-
-async function checkProbability({
-  messages,
-  requestHints,
-}: {
-  messages: CoreMessage[];
-  requestHints: RequestHints;
-}) {
-  try {
-    const { object } = await generateObject({
-      model: myProvider.languageModel("artifact-model"),
-      messages,
-      schema: z.object({
-        probability: z
-          .number()
-          .describe(
-            "Likelihood that the message is relevant (greater than 0.5 means related, less than 0.5 means not related)"
-          ),
-        reason: z
-          .string()
-          .min(1)
-          .describe(
-            "Explanation for why the message is considered relevant / not relevant"
-          ),
-      }),
-      system: systemPrompt({
-        selectedChatModel: "artifact-model",
-        requestHints,
-      }),
-      // for hackclub ai, comment out if you're using a different provider
-      mode: "json",
-    });
-
-    return object;
-  } catch {
-    console.log("Failed to fetch probability");
-    return {
-      probability: 0.5,
-      reason: "Oops! Something went wrong, please try again later",
-    };
-  }
 }

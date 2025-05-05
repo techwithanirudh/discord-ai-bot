@@ -1,10 +1,6 @@
 import { format } from "date-fns";
 import { TZDate } from "@date-fns/tz";
 
-export const country = "Greece";
-export const city = "Athens";
-export const timezone = "Europe/Athens";
-
 export function getTimeInCity(
   timezone: string,
   formatStr = "yyyy-MM-dd HH:mm:ssXXX"

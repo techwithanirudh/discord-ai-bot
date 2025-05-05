@@ -1,8 +1,9 @@
 import { Client, GatewayIntentBits } from "discord.js";
-import { config } from "./config";
-import { commands } from "./commands";
-import { events } from "./events";
-import { deployCommands } from "./deploy-commands";
+import { config } from "@/config";
+import { commands } from "@/commands";
+import { events } from "@/events";
+import { deployCommands } from "@/deploy-commands";
+import logger from "@/lib/logger";
 
 export const client = new Client({
   intents: [
@@ -17,7 +18,7 @@ export const client = new Client({
 });
 
 client.once("ready", () => {
-  console.log("Discord bot is ready! 🤖");
+  logger.info("Discord bot is ready! 🤖");
 });
 
 client.on("guildCreate", async (guild) => {
