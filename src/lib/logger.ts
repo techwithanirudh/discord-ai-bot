@@ -1,7 +1,8 @@
 import { pino } from "pino";
-import { mkdir, access } from 'node:fs/promises';
+import { mkdir, access } from "node:fs/promises";
 import path from "node:path";
-import { constants } from 'node:fs';
+import { constants } from "node:fs";
+import { env } from "@/env";
 
 async function exists(path: string): Promise<boolean> {
   try {
@@ -12,17 +13,17 @@ async function exists(path: string): Promise<boolean> {
   }
 }
 
-const logDir = process.env.LOG_DIRECTORY ?? 'logs'
+const logDir = env.LOG_DIRECTORY ?? "logs";
 
 if (!(await exists(logDir))) {
-    await mkdir(logDir, { recursive: true });
+  await mkdir(logDir, { recursive: true });
 }
 
 const transport = pino.transport({
   targets: [
     {
       target: "pino/file",
-      options: { destination: path.join(logDir, 'app.log') },
+      options: { destination: path.join(logDir, "app.log") },
     },
     {
       target: "pino-pretty",
@@ -32,9 +33,8 @@ const transport = pino.transport({
 
 export default pino(
   {
-    level: process.env.LOG_LEVEL || "info",
+    level: env.LOG_LEVEL || "info",
     timestamp: pino.stdTimeFunctions.isoTime,
   },
   transport
 );
-

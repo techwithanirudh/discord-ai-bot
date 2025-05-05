@@ -1,12 +1,12 @@
-import natural from 'natural';
+import natural from "natural";
 
-const abbreviations = ['i.e.', 'e.g.', 'Dr.']
+const abbreviations = ["i.e.", "e.g.", "Dr."];
 const sentenceTokenizer = new natural.SentenceTokenizer(abbreviations);
 
 export function sentences(text: string): string[] {
   return sentenceTokenizer
-    .tokenize(text)      
-    .map(s => s.trim())  
+    .tokenize(text)
+    .map((s) => s.trim())
     .filter(Boolean);
 }
 

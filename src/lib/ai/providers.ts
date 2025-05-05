@@ -6,15 +6,16 @@ import {
 
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
+import { env } from "@/env";
 
 const hackclub = createOpenAICompatible({
   name: "hackclub",
-  apiKey: process.env.HACKCLUB_API_KEY,
+  apiKey: env.HACKCLUB_API_KEY,
   baseURL: "https://ai.hackclub.com",
 });
 
 const openrouter = createOpenRouter({
-  apiKey: process.env.OPENROUTER_API_KEY!,
+  apiKey: env.OPENROUTER_API_KEY!,
 });
 
 export const myProvider = customProvider({
