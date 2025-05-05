@@ -12,6 +12,7 @@ const openrouter = createOpenRouter({
 export const myProvider = customProvider({
   languageModels: {
     "chat-model": openrouter("meta-llama/llama-4-maverick:free"),
+    "artifact-model": openrouter("qwen/qwen3-4b:free")
   },
   imageModels: {
     // 'small-model': openai.image('dall-e-2'),
