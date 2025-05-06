@@ -4,7 +4,7 @@ import { getChannelName, getMessagesByChannel } from "@/lib/queries";
 import { getTimeInCity } from "@/utils/time";
 import { convertToCoreMessages } from "@/utils/messages";
 import { assessRelevance } from "./utils/relevance";
-import { sendReply } from "./utils/respond";
+import { reply } from "./utils/respond";
 import {
   accrueUnprompted,
   clearUnprompted,
@@ -45,7 +45,7 @@ export async function execute(message: Message) {
   if (isPing || hasKeyword) {
     await clearUnprompted(ctxId); // reset idle quota
     logger.info(`Trigger detected — counter cleared for ${ctxId}`);
-    await sendReply(message); // immediate reply
+    await reply(message); // immediate reply
     return;
   }
 
@@ -68,6 +68,9 @@ export async function execute(message: Message) {
     city,
     country,
     server: guild?.name ?? "DM",
+    joined: guild?.members.me?.joinedTimestamp ?? 0,
+    status: guild?.members.me?.presence?.status ?? "offline",
+    activity: guild?.members.me?.presence?.activities[0]?.name ?? "none",
   };
 
   const { probability, reason } = await assessRelevance(coreMessages, hints);
@@ -81,5 +84,5 @@ export async function execute(message: Message) {
   /* Relevance high → speak & reset idle counter */
   await clearUnprompted(ctxId);
   logger.info(`Replying in ${ctxId}; idle counter reset`);
-  await sendReply(message, coreMessages, hints);
+  await reply(message, coreMessages, hints);
 }

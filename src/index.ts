@@ -4,6 +4,7 @@ import { commands } from "@/commands";
 import { events } from "@/events";
 import { deployCommands } from "@/deploy-commands";
 import logger from "@/lib/logger";
+import { beginStatusUpdates } from "@/utils/status";
 
 export const client = new Client({
   intents: [
@@ -17,8 +18,11 @@ export const client = new Client({
   ],
 });
 
-client.once("ready", () => {
-  logger.info("Discord bot is ready! 🤖");
+client.once("ready", (client) => {
+  logger.info(`Logged in as ${client.user.tag} (ID: ${client.user.id})`);
+  logger.info("Bot is ready!");
+
+  beginStatusUpdates(client);
 });
 
 client.on("guildCreate", async (guild) => {
