@@ -1,6 +1,7 @@
 import { speed as speedConfig } from "@/lib/constants";
 import { sentences, normalize } from "./tokenize-messages";
-import { Message, TextChannel, ThreadChannel } from "discord.js";
+import { DMChannel, Message, TextChannel, ThreadChannel } from "discord.js";
+import logger from "@/lib/logger";
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -34,7 +35,7 @@ function calculateDelay(text: string): number {
 
 export async function reply(message: Message, reply: string): Promise<void> {
   const channel = message.channel;
-  if (!(channel instanceof TextChannel || channel instanceof ThreadChannel)) {
+  if (!(channel instanceof TextChannel || channel instanceof ThreadChannel || channel instanceof DMChannel)) {
     return;
   }
 
@@ -49,14 +50,19 @@ export async function reply(message: Message, reply: string): Promise<void> {
     const pauseMs = (Math.random() * (maxDelay - minDelay) + minDelay) * 1000;
     await sleep(pauseMs);
 
-    await channel.sendTyping();
-    await sleep(calculateDelay(text));
+    try {
+      await channel.sendTyping();
+      await sleep(calculateDelay(text));
 
-    if (isFirst && Math.random() < 0.5) {
-      await message.reply(text);
-      isFirst = false;
-    } else {
-      await channel.send(text);
+      if (isFirst && Math.random() < 0.5) {
+        await message.reply(text);
+        isFirst = false;
+      } else {
+        await channel.send(text);
+      }
+    } catch (error) {
+      logger.error({ error }, "Error sending message");
+      break;
     }
   }
 }

@@ -20,7 +20,7 @@ export const client = new Client({
   ],
   partials: [
     Partials.Channel,
-    Partials.Message
+    Partials.Message  
   ]
 });
 
@@ -33,6 +33,11 @@ client.once("ready", (client) => {
 
 client.on("guildCreate", async (guild) => {
   await deployCommands({ guildId: guild.id });
+
+  const channel = guild.systemChannel;
+  if (channel) {
+    await channel.send('hi');
+  }
 });
 
 client.on("interactionCreate", async (interaction) => {

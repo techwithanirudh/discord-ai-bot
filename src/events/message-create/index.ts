@@ -21,7 +21,9 @@ export async function execute(message: Message) {
   if (message.author.bot) return;
 
   const { channel, content, mentions, client, guild, author } = message;
-  const ctxId = guild?.id ?? channel.id;
+
+  const isDM = !guild;
+  const ctxId = isDM ? `dm:${author.id}` : guild.id;
 
   const replyAllowed = (await ratelimit.limit(redisKeys.channelCount(ctxId)))
     .success;
@@ -37,12 +39,12 @@ export async function execute(message: Message) {
   );
 
   logger.info(
-    { ctxId, user: author.username, isPing, hasKeyword, content },
+    { ctxId, user: author.username, isPing, hasKeyword, content, isDM },
     "Incoming message"
   );
 
   /* ---------- Explicit trigger (ping / keyword) ------------------------- */
-  if (isPing || hasKeyword) {
+  if (isPing || hasKeyword || isDM) {
     await clearUnprompted(ctxId); // reset idle quota
     logger.info(`Trigger detected — counter cleared for ${ctxId}`);
     await reply(message); // immediate reply
@@ -67,7 +69,7 @@ export async function execute(message: Message) {
     time: getTimeInCity(timezone),
     city,
     country,
-    server: guild?.name ?? "DM",
+    server: isDM ? `DM with ${author.username}` : guild?.name ?? "DM",
     joined: guild?.members.me?.joinedTimestamp ?? 0,
     status: guild?.members.me?.presence?.status ?? "offline",
     activity: guild?.members.me?.presence?.activities[0]?.name ?? "none",
