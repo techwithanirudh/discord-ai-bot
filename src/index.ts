@@ -1,4 +1,4 @@
-import { Client, GatewayIntentBits } from "discord.js";
+import { Client, GatewayIntentBits, Partials } from "discord.js";
 import { config } from "@/config";
 import { commands } from "@/commands";
 import { events } from "@/events";
@@ -8,14 +8,18 @@ import { beginStatusUpdates } from "@/utils/status";
 
 export const client = new Client({
   intents: [
-    "Guilds",
-    "GuildMessages",
-    "DirectMessages",
-    "DirectMessageTyping",
-    "MessageContent",
-    "GuildMembers",
-    "GuildMessageTyping",
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.GuildMembers,
+    GatewayIntentBits.GuildMessageTyping,
+    GatewayIntentBits.DirectMessages,
+    GatewayIntentBits.DirectMessageTyping,
+    GatewayIntentBits.MessageContent,
   ],
+  partials: [
+    Partials.Channel,
+    Partials.Message
+  ]
 });
 
 client.once("ready", (client) => {
