@@ -7,6 +7,7 @@ import {
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import { env } from "@/env";
+import { createMem0 } from "@mem0/vercel-ai-provider";
 
 const hackclub = createOpenAICompatible({
   name: "hackclub",
