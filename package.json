@@ -13,8 +13,7 @@
   "main": "src/index.ts",
   "scripts": {
     "dev": "bun run --watch src/index.ts",
-    "start": "node .",
-    "build": "tsup src/index.ts --minify",
+    "start": "bun run src/index.ts",
     "format": "prettier --write \"**/*.{json,ts}\"",
     "lint": "eslint . --ext ts --fix"
   },
