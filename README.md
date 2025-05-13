@@ -16,11 +16,11 @@ A human-like bot that is almost indistinguishable from a real person.
 This project was developed with the following technologies:
 
 - [Vercel AI SDK][ai-sdk]
-- [Mem0][mem0]
 - [Exa AI][exa]
-- [Bun][bun]
-- [TypeScript][ts]
+- [Mem0][mem0]
 - [discord.js][discord.js]
+- [TypeScript][ts]
+- [Bun][bun]
 - [ESLint][eslint]
 - [Prettier][prettier]
 
