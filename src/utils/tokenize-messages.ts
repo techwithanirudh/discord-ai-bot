@@ -1,13 +1,8 @@
 import natural from "natural";
-
-const abbreviations = ["i.e.", "e.g.", "Dr."];
-const sentenceTokenizer = new natural.SentenceTokenizer(abbreviations);
+import nlp from 'compromise';
 
 export function sentences(text: string): string[] {
-  return sentenceTokenizer
-    .tokenize(text)
-    .map((s) => s.trim())
-    .filter(Boolean);
+  return nlp(text).sentences().out('array').map((s: string) => s.trim());
 }
 
 export function normalize(input: string[]): string[] {
