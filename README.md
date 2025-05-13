@@ -1,17 +1,17 @@
 <h1 align="center">AI Discord Bot</h4>
 
-<p align="center">
-  <a href="#-project">Introduction</a> |
-  <a href="#-technologies">Tech Stack</a> |
-  <a href="#ℹ%EF%B8%8F-how-to-use">Usage</a> |
-  <a href="#-license">License</a>
-</p>
+## 📋 Table of Contents
 
-## 💻 Introduction
+1. 🤖 [Introduction](#introduction)
+2. 🚀 [Tech Stack](#tech-stack)
+4. 📚 [Getting Started](#getting-started)
+5. 📝 [License](#license)
+
+## <a name="introduction">🤖 Introduction</a>
 
 A human-like bot that is almost indistinguishable from a real person.
 
-## 🚀 Tech Stack
+## <a name="tech-stack">🚀 Tech Stack</a>
 
 This project was developed with the following technologies:
 
@@ -24,7 +24,7 @@ This project was developed with the following technologies:
 - [ESLint][eslint]
 - [Prettier][prettier]
 
-## ℹ️ Usage
+## <a name="getting-started">📚 Getting Started</a>
 
 To clone and run this application, first you need to create a [Discord Bot](https://www.androidpolice.com/how-to-make-discord-bot/). Afterwards, you will need [Git][git] and [Bun][bun] installed on your computer.
 
@@ -46,7 +46,7 @@ Great! Now you just need to start the development server.
 $ bun run dev
 ```
 
-## 📝 License
+## <a name="license">📝 License</a>
 
 This project is under the AGPL-v3 license. See the [LICENSE](LICENSE) for details.
 
