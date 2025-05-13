@@ -17,6 +17,8 @@ A human-like bot that is almost indistinguishable from a real person.
 This project was developed with the following technologies:
 
 - [Vercel AI SDK][ai-sdk]
+- [Mem0][mem0]
+- [Exa AI][exa]
 - [Bun][bun]
 - [TypeScript][ts]
 - [discord.js][discord.js]
@@ -60,3 +62,5 @@ This project is under the AGPL-v3 license. See the [LICENSE](LICENSE) for detail
 [prettier]: https://prettier.io/
 [ai-sdk]: https://ai-sdk.dev/
 [bun]: https://bun.sh/
+[mem0]: https://mem0.ai/
+[exa]: https://exa.ai/
