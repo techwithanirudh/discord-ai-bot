@@ -13,6 +13,7 @@ import {
 import { type RequestHints } from "@/lib/ai/prompts";
 import { ratelimit, redisKeys } from "@/lib/kv";
 import logger from "@/lib/logger";
+import { retrieveMemories } from "@mem0/vercel-ai-provider";
 
 export const name = Events.MessageCreate;
 export const once = false;
@@ -63,6 +64,7 @@ export async function execute(message: Message) {
   /* Relevance check happens ONLY in this branch (no trigger) */
   const messages = await getMessagesByChannel({ channel, limit: 50 });
   const coreMessages = convertToCoreMessages(messages);
+  const memories = await retrieveMemories(message?.content, { user_id: message.author.id });
 
   const hints: RequestHints = {
     channel: getChannelName(channel),
@@ -75,7 +77,7 @@ export async function execute(message: Message) {
     activity: guild?.members.me?.presence?.activities[0]?.name ?? "none",
   };
 
-  const { probability, reason } = await assessRelevance(coreMessages, hints);
+  const { probability, reason } = await assessRelevance(message, coreMessages, hints, memories);
   logger.info(`Relevance for ${ctxId}: ${reason}; p=${probability}`);
 
   if (probability <= 0.5) {
@@ -86,5 +88,5 @@ export async function execute(message: Message) {
   /* Relevance high → speak & reset idle counter */
   await clearUnprompted(ctxId);
   logger.info(`Replying in ${ctxId}; idle counter reset`);
-  await reply(message, coreMessages, hints);
+  await reply(message, coreMessages, hints, memories);
 }
