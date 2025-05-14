@@ -1,10 +1,10 @@
 import { Client, GatewayIntentBits, Partials } from "discord.js";
-import { config } from "@/config";
 import { commands } from "@/commands";
 import { events } from "@/events";
 import { deployCommands } from "@/deploy-commands";
 import logger from "@/lib/logger";
 import { beginStatusUpdates } from "@/utils/status";
+import { env } from "@/env";
 
 export const client = new Client({
   intents: [
@@ -51,13 +51,13 @@ client.on("interactionCreate", async (interaction) => {
 });
 
 Object.keys(events).forEach(function (key) {
-  const event = events[key];
+  const event = events[key as keyof typeof events];
 
-  if (event?.once === true) {
+  if (event?.once) {
     client.once(event.name, (...args) => event.execute(...args));
   } else {
     client.on(event.name, (...args) => event.execute(...args));
   }
 });
 
-client.login(config.DISCORD_TOKEN);
+client.login(env.DISCORD_TOKEN);

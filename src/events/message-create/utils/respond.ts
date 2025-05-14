@@ -6,7 +6,7 @@ import { getChannelName, getMessagesByChannel } from "@/lib/queries";
 import { convertToCoreMessages } from "@/utils/messages";
 import { reply as staggeredReply } from "@/utils/delay";
 import { getTimeInCity } from "@/utils/time";
-import { timezone, city, country } from "@/lib/constants";
+import { timezone, city, country } from "@/config";
 import { addMemories, retrieveMemories } from "@mem0/vercel-ai-provider";
 
 export async function reply(

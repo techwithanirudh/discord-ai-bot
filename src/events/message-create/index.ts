@@ -1,5 +1,5 @@
 import { Events, Message } from "discord.js";
-import { keywords, city, country, timezone } from "@/lib/constants";
+import { keywords, city, country, timezone } from "@/config";
 import { getChannelName, getMessagesByChannel } from "@/lib/queries";
 import { getTimeInCity } from "@/utils/time";
 import { convertToCoreMessages } from "@/utils/messages";

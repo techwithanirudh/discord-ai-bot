@@ -1,4 +1,4 @@
-import { speed as speedConfig } from "@/lib/constants";
+import { speed as speedConfig } from "@/config";
 import { sentences, normalize } from "./tokenize-messages";
 import { DMChannel, Message, TextChannel, ThreadChannel } from "discord.js";
 import logger from "@/lib/logger";

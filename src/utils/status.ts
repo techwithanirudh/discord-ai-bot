@@ -1,6 +1,6 @@
 import { Client } from "discord.js";
 import type { PresenceStatusData } from "discord.js";
-import { activities, statuses } from "@/lib/constants";
+import { activities, statuses } from "@/config";
 import logger from "@/lib/logger";
 
 type Activity = typeof activities[number];
