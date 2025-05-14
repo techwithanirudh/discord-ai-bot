@@ -2,3 +2,4 @@
 - also when a user is talking like if they send other message interrupt sending first one
 - Fix DM Logic
 - Add Web Search
+- ✅ Added support for Discord stickers
