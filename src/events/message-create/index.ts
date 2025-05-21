@@ -47,7 +47,7 @@ export async function execute(message: Message) {
   /* ---------- Explicit trigger (ping / keyword) ------------------------- */
   if (isPing || hasKeyword || isDM) {
     await clearUnprompted(ctxId); // reset idle quota
-    logger.info(`Trigger detected — counter cleared for ${ctxId}`);
+    logger.debug(`Trigger detected — counter cleared for ${ctxId}`);
     await reply(message); // immediate reply
     return;
   }
@@ -64,7 +64,7 @@ export async function execute(message: Message) {
   /* Relevance check happens ONLY in this branch (no trigger) */
   const messages = await getMessagesByChannel({ channel, limit: 50 });
   const coreMessages = convertToCoreMessages(messages);
-  const memories = await retrieveMemories(message?.content, { user_id: message.author.id });
+  const memories = await retrieveMemories(message?.content);
 
   const hints: RequestHints = {
     channel: getChannelName(channel),
@@ -88,5 +88,6 @@ export async function execute(message: Message) {
   /* Relevance high → speak & reset idle counter */
   await clearUnprompted(ctxId);
   logger.info(`Replying in ${ctxId}; idle counter reset`);
-  await reply(message, coreMessages, hints, memories);
+  const result = await reply(message, coreMessages, hints, memories);
+  logger.info(`Replied to ${ctxId}: ${result}`);
 }
