@@ -64,7 +64,7 @@ export async function execute(message: Message) {
   /* Relevance check happens ONLY in this branch (no trigger) */
   const messages = await getMessagesByChannel({ channel, limit: 50 });
   const coreMessages = convertToCoreMessages(messages);
-  const memories = await retrieveMemories(message?.content);
+  const memories = await retrieveMemories(message?.content, { user_id: message.author.id });
 
   const hints: RequestHints = {
     channel: getChannelName(channel),
