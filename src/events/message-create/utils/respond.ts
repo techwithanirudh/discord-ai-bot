@@ -35,7 +35,7 @@ export async function reply(
     }
 
     if (!memories) {
-      memories = await retrieveMemories(msg?.content, { user_id: msg.author.id });
+      memories = await retrieveMemories(msg?.content);
     }
 
     const { text } = await generateText({
