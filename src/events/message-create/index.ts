@@ -1,5 +1,5 @@
 import { Events, Message } from "discord.js";
-import { keywords, city, country, timezone } from "@/config";
+import { keywords, city, country, timezone, initialMessages } from "@/config";
 import { getChannelName, getMessagesByChannel } from "@/lib/queries";
 import { getTimeInCity } from "@/utils/time";
 import { convertToCoreMessages } from "@/utils/messages";
@@ -14,6 +14,7 @@ import { type RequestHints } from "@/lib/ai/prompts";
 import { ratelimit, redisKeys } from "@/lib/kv";
 import logger from "@/lib/logger";
 import { retrieveMemories } from "@mem0/vercel-ai-provider";
+import type { CoreMessage } from "ai";
 
 export const name = Events.MessageCreate;
 export const once = false;
@@ -63,7 +64,7 @@ export async function execute(message: Message) {
 
   /* Relevance check happens ONLY in this branch (no trigger) */
   const messages = await getMessagesByChannel({ channel, limit: 50 });
-  const coreMessages = convertToCoreMessages(messages);
+  const coreMessages = [...initialMessages as CoreMessage[], ...convertToCoreMessages(messages)];
   const memories = await retrieveMemories(message?.content, { user_id: message.author.id });
 
   const hints: RequestHints = {

@@ -21,3 +21,9 @@ export const activities = [
 ] as const;
 
 export const messageThreshold = 10;
+export const initialMessages = [
+  { role: "user", content: "tom_techy: how ru" },
+  { role: "assistant", content: "zenix_bits: just the normal life. how abt u" },
+  { role: "user", content: "tom_techy: what are you doing" },
+  { role: "assistant", content: "zenix_bits: coding stuff idk lol" },
+]
