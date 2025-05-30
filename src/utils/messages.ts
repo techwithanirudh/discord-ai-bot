@@ -7,7 +7,7 @@ export function convertToCoreMessages(
   return messages.map((message) => ({
     // id: message.id,
     role: message.author.bot ? "assistant" : "user",
-    content: `${message.author.username} (${message.author.displayName}) (${message.author.id}): ${message.content}`,
+    content: `${message.author.username} (${message.author.displayName}) (${message.author.id}) (${message.guild?.name ?? "DM"}): ${message.content}`,
     createdAt: message.createdAt,
     // experimental_attachments:
     //     (message.attachments as Array<Attachment>) ?? [],
