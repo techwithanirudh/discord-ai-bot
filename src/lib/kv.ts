@@ -11,7 +11,7 @@ export const ratelimit = new Ratelimit({
   redis,
   limiter: Ratelimit.slidingWindow(7, "30 s"),
   analytics: true,
-  prefix: "zenix",
+  prefix: "discord",
 });
 
 export const redisKeys = {
