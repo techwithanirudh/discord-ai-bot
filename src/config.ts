@@ -26,4 +26,4 @@ export const initialMessages = [
   { role: "assistant", content: "zenix_bits: just the normal life. how abt u" },
   { role: "user", content: "tom_techy: what are you doing" },
   { role: "assistant", content: "zenix_bits: coding stuff idk lol" },
-]
+];

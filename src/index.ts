@@ -36,7 +36,7 @@ client.on("guildCreate", async (guild) => {
 
   const channel = guild.systemChannel;
   if (channel) {
-    await channel.send('hi');
+    await channel.send("hi");
   }
 });
 

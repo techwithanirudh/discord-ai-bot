@@ -1,43 +1,21 @@
 import type { Message } from "discord.js";
-import { generateText, type CoreMessage, type LanguageModelV1, type LanguageModelV1Prompt } from "ai";
+import { generateText } from "ai";
 import { myProvider } from "@/lib/ai/providers";
-import { systemPrompt, type RequestHints } from "@/lib/ai/prompts";
-import { getChannelName, getMessagesByChannel } from "@/lib/queries";
-import { convertToCoreMessages } from "@/utils/messages";
-import { reply as staggeredReply } from "@/utils/delay";
-import { getTimeInCity } from "@/utils/time";
-import { timezone, city, country } from "@/lib/constants";
-import { addMemories, retrieveMemories } from "@mem0/vercel-ai-provider";
+import { systemPrompt } from "@/lib/ai/prompts";
+import { addMemories } from "@mem0/vercel-ai-provider";
+import logger from "@/lib/logger";
+import { react } from "@/lib/ai/tools/react";
+import { getWeather } from "@/lib/ai/tools/get-weather";
+import type { CoreMessage } from "ai";
+import type { RequestHints } from "@/lib/ai/prompts";
 
-export async function reply(
+export async function generateResponse(
   msg: Message,
-  messages?: CoreMessage[],
-  hints?: RequestHints,
-  memories?: string
-): Promise<string> {
+  messages: CoreMessage[],
+  hints: RequestHints,
+  memories: string
+): Promise<{ success: boolean; response?: string; error?: string; }> {
   try {
-    if (!messages) {
-      const raw = await getMessagesByChannel({ channel: msg.channel, limit: 50 });
-      messages = convertToCoreMessages(raw);
-    }
-
-    if (!hints) {
-      hints = {
-        channel: getChannelName(msg.channel),
-        time: getTimeInCity(timezone),
-        city,
-        country,
-        server: msg.guild?.name ?? "DM",
-        joined: msg.guild?.members.me?.joinedTimestamp ?? 0,
-        status: msg.guild?.members.me?.presence?.status ?? "offline",
-        activity: msg.guild?.members.me?.presence?.activities[0]?.name ?? "none",
-      };
-    }
-
-    if (!memories) {
-      memories = await retrieveMemories(msg?.content);
-    }
-
     const { text } = await generateText({
       model: myProvider.languageModel("chat-model"),
       messages: [
@@ -49,12 +27,31 @@ export async function reply(
             "Share your thoughts or just chat about it, as if you've stumbled upon an interesting topic in a group discussion.",
         },
       ],
+      experimental_activeTools: [ "getWeather", "react" ],
+      tools: {
+        getWeather,
+        react: react({ message: msg }),
+      },
       system: systemPrompt({
         selectedChatModel: "chat-model",
         requestHints: hints,
         memories,
       }),
-    })
+      maxSteps: 10,
+      onStepFinish({ text, toolCalls, toolResults, finishReason, usage }) {
+        logger.debug({
+          finishReason,
+          response: text,
+          usage: usage ?? "No usage data available",
+          toolSummary: toolCalls?.map((call, index) => ({
+            index,
+            name: call.toolName,
+            arguments: call.args,
+            result: toolResults?.[index] ?? "No result",
+          })) ?? "No tool calls made"
+        }, "Tool execution step finished.");
+      },
+    });
 
     await addMemories([
       ...messages,
@@ -64,9 +61,11 @@ export async function reply(
       },
     ] as any, { user_id: msg.author.id });
 
-    await staggeredReply(msg, text);
-    return text;
+    return { success: true, response: text };
   } catch (error) {
-    return "Oops! Something went wrong, please try again later";
+    return {
+      success: false,
+      error: "Oops! Something went wrong, please try again later"
+    };
   }
 }

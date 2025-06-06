@@ -2,7 +2,7 @@ import { redis, redisKeys } from "@/lib/kv";
 import { messageThreshold } from "@/config";
 
 /** Add one “idle chatter” tick for this context and return the new total. */
-export async function accrueUnprompted(ctxId: string): Promise<number> {
+export async function getUnprompted(ctxId: string): Promise<number> {
   const key = redisKeys.messageCount(ctxId);
   const n = await redis.incr(key);
   if (n === 1) await redis.expire(key, 3600); // 1‑hour window
