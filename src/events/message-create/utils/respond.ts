@@ -5,6 +5,7 @@ import { systemPrompt } from "@/lib/ai/prompts";
 import { addMemories } from "@mem0/vercel-ai-provider";
 import logger from "@/lib/logger";
 import { react } from "@/lib/ai/tools/react";
+import { report } from "@/lib/ai/tools/report";
 import { getWeather } from "@/lib/ai/tools/get-weather";
 import type { CoreMessage } from "ai";
 import type { RequestHints } from "@/lib/ai/prompts";
@@ -27,10 +28,11 @@ export async function generateResponse(
             "Share your thoughts or just chat about it, as if you've stumbled upon an interesting topic in a group discussion.",
         },
       ],
-      experimental_activeTools: ["getWeather", "react"],
+      experimental_activeTools: ["getWeather", "react", "report"],
       tools: {
         getWeather,
         react: react({ message: msg }),
+        report: report({ message: msg})
       },
       system: systemPrompt({
         selectedChatModel: "chat-model",
