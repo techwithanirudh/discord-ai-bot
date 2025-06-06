@@ -7,11 +7,14 @@ import type { Message } from "discord.js";
 import type { CoreMessage } from "ai";
 import type { RequestHints } from "@/lib/ai/prompts";
 
-export async function buildChatContext(msg: Message, opts?: {
-  messages?: CoreMessage[],
-  hints?: RequestHints,
-  memories?: string
-}) {
+export async function buildChatContext(
+  msg: Message,
+  opts?: {
+    messages?: CoreMessage[];
+    hints?: RequestHints;
+    memories?: string;
+  }
+) {
   let messages = opts?.messages;
   let hints = opts?.hints;
   let memories = opts?.memories;

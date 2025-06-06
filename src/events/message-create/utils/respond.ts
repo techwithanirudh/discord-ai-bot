@@ -14,7 +14,7 @@ export async function generateResponse(
   messages: CoreMessage[],
   hints: RequestHints,
   memories: string
-): Promise<{ success: boolean; response?: string; error?: string; }> {
+): Promise<{ success: boolean; response?: string; error?: string }> {
   try {
     const { text } = await generateText({
       model: myProvider.languageModel("chat-model"),
@@ -27,7 +27,7 @@ export async function generateResponse(
             "Share your thoughts or just chat about it, as if you've stumbled upon an interesting topic in a group discussion.",
         },
       ],
-      experimental_activeTools: [ "getWeather", "react" ],
+      experimental_activeTools: ["getWeather", "react"],
       tools: {
         getWeather,
         react: react({ message: msg }),
@@ -39,33 +39,40 @@ export async function generateResponse(
       }),
       maxSteps: 10,
       onStepFinish({ text, toolCalls, toolResults, finishReason, usage }) {
-        logger.debug({
-          finishReason,
-          response: text,
-          usage: usage ?? "No usage data available",
-          toolSummary: toolCalls?.map((call, index) => ({
-            index,
-            name: call.toolName,
-            arguments: call.args,
-            result: toolResults?.[index] ?? "No result",
-          })) ?? "No tool calls made"
-        }, "Tool execution step finished.");
+        logger.debug(
+          {
+            finishReason,
+            response: text,
+            usage: usage ?? "No usage data available",
+            toolSummary:
+              toolCalls?.map((call, index) => ({
+                index,
+                name: call.toolName,
+                arguments: call.args,
+                result: toolResults?.[index] ?? "No result",
+              })) ?? "No tool calls made",
+          },
+          "Tool execution step finished."
+        );
       },
     });
 
-    await addMemories([
-      ...messages,
-      {
-        role: "assistant",
-        content: text,
-      },
-    ] as any, { user_id: msg.author.id });
+    await addMemories(
+      [
+        ...messages,
+        {
+          role: "assistant",
+          content: text,
+        },
+      ] as any,
+      { user_id: msg.author.id }
+    );
 
     return { success: true, response: text };
   } catch (error) {
     return {
       success: false,
-      error: "Oops! Something went wrong, please try again later"
+      error: "Oops! Something went wrong, please try again later",
     };
   }
 }

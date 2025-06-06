@@ -17,7 +17,6 @@ import type { RequestHints } from "@/lib/ai/prompts";
 export const name = Events.MessageCreate;
 export const once = false;
 
-
 export async function execute(message: Message) {
   if (message.author.bot) return;
 
@@ -25,7 +24,8 @@ export async function execute(message: Message) {
   const isDM = !guild;
   const ctxId = isDM ? `dm:${author.id}` : guild.id;
 
-  const replyAllowed = (await ratelimit.limit(redisKeys.channelCount(ctxId))).success;
+  const replyAllowed = (await ratelimit.limit(redisKeys.channelCount(ctxId)))
+    .success;
   if (!replyAllowed) {
     logger.info(`[${ctxId}] Rate limit hit for ${ctxId}. Skipping reply.`);
     return;
@@ -33,14 +33,21 @@ export async function execute(message: Message) {
 
   const botId = client.user?.id;
   const isPing = botId ? mentions.users.has(botId) : false;
-  const hasKeyword = keywords.some((k) => content.toLowerCase().includes(k.toLowerCase()));
+  const hasKeyword = keywords.some((k) =>
+    content.toLowerCase().includes(k.toLowerCase())
+  );
 
-  logger.info({ user: author.username, isPing, hasKeyword, content, isDM }, `[${ctxId}] Incoming message`);
+  logger.info(
+    { user: author.username, isPing, hasKeyword, content, isDM },
+    `[${ctxId}] Incoming message`
+  );
 
   // Explicit triggers (ping/keyword/DM)
   if (isPing || hasKeyword || isDM) {
     await clearUnprompted(ctxId);
-    logger.debug(`[${ctxId}] Triggered by ping/keyword/DM. Idle counter cleared.`);
+    logger.debug(
+      `[${ctxId}] Triggered by ping/keyword/DM. Idle counter cleared.`
+    );
 
     const { messages, hints, memories } = await buildChatContext(message);
     const result = await generateResponse(message, messages, hints, memories);
@@ -49,7 +56,7 @@ export async function execute(message: Message) {
       message,
       result,
       author: author.username,
-      reason: "explicit trigger"
+      reason: "explicit trigger",
     });
     return;
   }
@@ -65,7 +72,12 @@ export async function execute(message: Message) {
 
   // Relevance check (no explicit trigger)
   const { messages, hints, memories } = await buildChatContext(message);
-  const { probability, reason } = await assessRelevance(message, messages, hints, memories);
+  const { probability, reason } = await assessRelevance(
+    message,
+    messages,
+    hints,
+    memories
+  );
   logger.info(`Relevance for ${ctxId}: ${reason}; p=${probability}`);
 
   if (probability <= 0.5) {
@@ -82,7 +94,7 @@ export async function execute(message: Message) {
     message,
     result,
     author: author.username,
-    reason: "explicit trigger"
+    reason: "explicit trigger",
   });
 }
 
@@ -91,13 +103,13 @@ async function handleBotReply({
   message,
   result,
   author,
-  reason = ""
+  reason = "",
 }: {
-  ctxId: string,
-  message: Message,
-  result: { success?: boolean, response?: string, error?: string },
-  author: string,
-  reason?: string
+  ctxId: string;
+  message: Message;
+  result: { success?: boolean; response?: string; error?: string };
+  author: string;
+  reason?: string;
 }) {
   if (result.success && result.response) {
     await staggeredReply(message, result.response);
@@ -108,7 +120,9 @@ async function handleBotReply({
   } else if (result.error) {
     logger.error(
       { error: result.error },
-      `[${ctxId}] Failed to generate response for "${author}"${reason ? ` (${reason})` : ""}`
+      `[${ctxId}] Failed to generate response for "${author}"${
+        reason ? ` (${reason})` : ""
+      }`
     );
   }
 }

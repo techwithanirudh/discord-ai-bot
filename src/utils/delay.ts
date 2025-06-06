@@ -35,7 +35,13 @@ function calculateDelay(text: string): number {
 
 export async function reply(message: Message, reply: string): Promise<void> {
   const channel = message.channel;
-  if (!(channel instanceof TextChannel || channel instanceof ThreadChannel || channel instanceof DMChannel)) {
+  if (
+    !(
+      channel instanceof TextChannel ||
+      channel instanceof ThreadChannel ||
+      channel instanceof DMChannel
+    )
+  ) {
     return;
   }
 

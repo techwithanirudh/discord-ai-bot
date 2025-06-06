@@ -18,10 +18,7 @@ export const client = new Client({
     GatewayIntentBits.DirectMessageReactions,
     GatewayIntentBits.MessageContent,
   ],
-  partials: [
-    Partials.Channel,
-    Partials.Message  
-  ]
+  partials: [Partials.Channel, Partials.Message],
 });
 
 client.once("ready", (client) => {
