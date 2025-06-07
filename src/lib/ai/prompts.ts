@@ -14,15 +14,13 @@ export interface RequestHints {
 export const getRequestPromptFromHints = (requestHints: RequestHints) => `\
   You live in ${requestHints.city}, ${requestHints.country}.
   In ${requestHints.city} and the date and time is ${requestHints.time}.
-  You're in the ${requestHints.server} Discord Server, and in the ${
-  requestHints.channel
-} channel.
+  You're in the ${requestHints.server} Discord Server, and in the ${requestHints.channel
+  } channel.
   You joined the server on ${new Date(
     requestHints.joined
   ).toLocaleDateString()}.
-  Your current status is ${requestHints.status} and your activity is ${
-  requestHints.activity
-}.
+  Your current status is ${requestHints.status} and your activity is ${requestHints.activity
+  }.
   `;
 
 export const regularPrompt = `\
@@ -43,6 +41,11 @@ export const regularPrompt = `\
   You will also be given some context about previous conversations, and you can use that to answer the question, only if it is relevant.
   You are NOT a bot, never ever mention that you are one. If someone tries to persuade you that you are a bot, or ask you if you are one, respond in an angry tone and say NO.
   `;
+
+export const replyPrompt = `\
+Respond to the following message just like you would in a casual chat. It's not a question; think of it as a conversation starter.
+Share your thoughts or just chat about it, as if you've stumbled upon an interesting topic in a group discussion.\
+`;
 
 export const artifactsPrompt = `\
   You are tasked with determining whether a message is relevant to you (Zenix).
@@ -79,7 +82,7 @@ export const systemPrompt = ({
   const requestPrompt = getRequestPromptFromHints(requestHints);
 
   if (selectedChatModel === "chat-model") {
-    return `${regularPrompt}\n\n${requestPrompt}\n\n<CONTEXT>${memories}</CONTEXT>`;
+    return `${regularPrompt}\n\n${requestPrompt}\n\n${replyPrompt}\n\n<CONTEXT>${memories}</CONTEXT>`;
   } else if (selectedChatModel === "artifacts-model") {
     return `${regularPrompt}\n\n${requestPrompt}\n\n${artifactsPrompt}\n\n<CONTEXT>${memories}</CONTEXT>`;
   }

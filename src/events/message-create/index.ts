@@ -50,24 +50,27 @@ export async function execute(message: Message) {
   }
 
   const idleCount = await getUnprompted(ctxId);
-  logger.debug(`Idle counter for ${ctxId}: ${idleCount}`);
+  logger.debug(`[${ctxId}] Idle counter: ${idleCount}`);
 
   if (!(await hasUnpromptedQuota(ctxId))) {
-    logger.info(`Idle quota exhausted in ${ctxId} — staying silent`);
+    logger.info(`[${ctxId}] Idle quota exhausted — staying silent`);
     return;
   }
 
   const { messages, hints, memories } = await buildChatContext(message);
   const { probability, reason } = await assessRelevance(message, messages, hints, memories);
-  logger.info(`Relevance for ${ctxId}: ${reason}; p=${probability}`);
+  logger.info(
+    { reason, probability },
+    `[${ctxId}] Relevance check`
+  );
 
   if (probability <= 0.5) {
-    logger.debug("Low relevance — ignoring");
+    logger.debug(`[${ctxId}] Low relevance — ignoring`);
     return;
   }
 
   await clearUnprompted(ctxId);
-  logger.info(`Replying in ${ctxId}; idle counter reset`);
+  logger.info(`[${ctxId}] Replying; idle counter reset`);
   const result = await generateResponse(message, messages, hints, memories);
   logReply(ctxId, author.username, result, "high relevance");
   if (result.success && result.response) {
