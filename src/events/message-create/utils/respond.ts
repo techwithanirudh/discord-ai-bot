@@ -32,7 +32,7 @@ export async function generateResponse(
       tools: {
         getWeather,
         react: react({ message: msg }),
-        report: report({ message: msg })
+        report: report({ message: msg }),
       },
       system: systemPrompt({
         selectedChatModel: "chat-model",
@@ -74,7 +74,7 @@ export async function generateResponse(
   } catch (e) {
     return {
       success: false,
-      error: (e as Error)?.message
+      error: (e as Error)?.message,
     };
   }
 }

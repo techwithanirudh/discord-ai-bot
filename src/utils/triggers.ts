@@ -8,10 +8,15 @@ export function getTrigger(
   botId?: string
 ): { type: TriggerType; info: string | string[] | null } {
   if (botId && message.mentions.users.has(botId)) {
-    return { type: "ping", info: message.mentions.users.get(botId)?.username || null };
+    return {
+      type: "ping",
+      info: message.mentions.users.get(botId)?.username || null,
+    };
   }
   const content = message.content.toLowerCase();
-  const matchedKeywords = keywords.filter((k) => content.includes(k.toLowerCase()));
+  const matchedKeywords = keywords.filter((k) =>
+    content.includes(k.toLowerCase())
+  );
   if (matchedKeywords.length > 0) {
     return { type: "keyword", info: matchedKeywords };
   }

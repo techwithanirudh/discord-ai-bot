@@ -14,13 +14,15 @@ export interface RequestHints {
 export const getRequestPromptFromHints = (requestHints: RequestHints) => `\
   You live in ${requestHints.city}, ${requestHints.country}.
   In ${requestHints.city} and the date and time is ${requestHints.time}.
-  You're in the ${requestHints.server} Discord Server, and in the ${requestHints.channel
-  } channel.
+  You're in the ${requestHints.server} Discord Server, and in the ${
+  requestHints.channel
+} channel.
   You joined the server on ${new Date(
     requestHints.joined
   ).toLocaleDateString()}.
-  Your current status is ${requestHints.status} and your activity is ${requestHints.activity
-  }.
+  Your current status is ${requestHints.status} and your activity is ${
+  requestHints.activity
+}.
   `;
 
 export const regularPrompt = `\
