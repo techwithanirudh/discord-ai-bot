@@ -26,6 +26,7 @@ const google = createGoogleGenerativeAI({
 export const myProvider = customProvider({
   languageModels: {
     // "chat-model": hackclub("llama-3.3-70b-versatile"),
+    // "chat-model": google("gemini-2.5-flash-preview-05-20"),
     "chat-model": google("gemini-2.5-flash-preview-05-20"),
     "artifact-model": hackclub("llama-3.3-70b-versatile"),
   },
