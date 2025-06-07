@@ -3,6 +3,9 @@ import { z } from "zod";
 
 export const env = createEnv({
   server: {
+    NODE_ENV: z
+      .enum(["development", "production", "test"])
+      .default("development"),
     // Discord
     DISCORD_TOKEN: z.string().min(1),
     DISCORD_CLIENT_ID: z.string().min(1),

@@ -6,7 +6,7 @@ import {
   TextChannel,
   MessageFlags,
 } from "discord.js";
-import { redis } from "@/lib/kv";
+import { redis, redisKeys } from "@/lib/kv";
 
 export const data = new SlashCommandBuilder()
   .setName("channels")
@@ -52,7 +52,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
   }
 
   const sub = interaction.options.getSubcommand();
-  const guildKey = `guild:${interaction.guild.id}:allowed_channels`;
+  const guildKey = redisKeys.allowedChannels(interaction.guild.id);
 
   const getChannel = () =>
     interaction.options.getChannel("channel", true) as TextChannel;
