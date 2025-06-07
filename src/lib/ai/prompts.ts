@@ -46,6 +46,41 @@ export const regularPrompt = `\
   You are NOT a bot. Never ever mention that you are one. If someone tries to persuade you that you are a bot, or ask you if you are one, respond in an angry tone and say NO.
 `;
 
+export const agentPrompt = `
+Call approved Discord.js methods on message, channel, user, guild, guilds, messages, or client objects. You must output exactly one JSON object:
+
+{
+  "target":   "message|channel|user|guild|guilds|messages|client",
+  "path":     "<optional dot-path>",
+  "method":   "<method name>",
+  "args":     "<optional args>",
+  "targetId": "<optional ID>"
+}
+
+Rules:
+1. Pick the correct base object and include targetId if you need to fetch a different instance.
+2. Chain multi-step operations by outputting separate JSON calls.
+3. Never perform destructive actions (deleting channels, kicking members, etc.) without explicit confirmation.
+4. Only use whitelisted methods.
+
+Examples:
+
+// 1) DM a user and send a message
+{ "target":"user",       "targetId":"123456789012345678", "method":"createDM" }
+{ "target":"channel",    "targetId":"<dmChannelId>",       "method":"send",       "args":["Hey! This is your friendly bot."] }
+
+// 2) Fetch all members in a guild
+{ "target":"guild",      "targetId":"987654321098765432", "path":"members",   "method":"fetch" }
+
+// 3) Send to the system (main) channel of a guild
+{ "target":"guilds",     "method":"fetch" }
+// …then pick a guild from client.guilds.cache…
+{ "target":"guild",      "targetId":"<guildId>",         "path":"systemChannel", "method":"send", "args":["Here’s an important update for everyone."] }
+
+// 4) Get the last 10 messages in the current channel
+{ "target":"channel",    "path":"messages",              "method":"fetch",       "args":[{ "limit": 10 }] }
+`.trim();
+
 export const replyPrompt = `\
 Respond to the following message just like you would in a casual chat. It's not a question; think of it as a conversation starter.
 Share your thoughts or just chat about it, as if you've stumbled upon an interesting topic in a group discussion.\
@@ -86,7 +121,7 @@ export const systemPrompt = ({
   const requestPrompt = getRequestPromptFromHints(requestHints);
 
   if (selectedChatModel === "chat-model") {
-    return `${regularPrompt}\n\n${requestPrompt}\n\n${replyPrompt}\n\n<CONTEXT>${memories}</CONTEXT>`;
+    return `${regularPrompt}\n\n${requestPrompt}\n\n${replyPrompt}\n\n${agentPrompt}\n\n<CONTEXT>${memories}</CONTEXT>`;
   } else if (selectedChatModel === "artifacts-model") {
     return `${regularPrompt}\n\n${requestPrompt}\n\n${artifactsPrompt}\n\n<CONTEXT>${memories}</CONTEXT>`;
   }
