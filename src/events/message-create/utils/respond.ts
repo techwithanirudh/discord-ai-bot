@@ -21,12 +21,12 @@ export async function generateResponse(
       model: myProvider.languageModel("chat-model"),
       messages: [
         ...messages,
-        {
-          role: "system",
-          content:
-            "Respond to the following message just like you would in a casual chat. It's not a question; think of it as a conversation starter.\n" +
-            "Share your thoughts or just chat about it, as if you've stumbled upon an interesting topic in a group discussion.",
-        },
+        // {
+        //   role: "system",
+        //   content:
+        //     "Respond to the following message just like you would in a casual chat. It's not a question; think of it as a conversation starter.\n" +
+        //     "Share your thoughts or just chat about it, as if you've stumbled upon an interesting topic in a group discussion.",
+        // },
       ],
       experimental_activeTools: ["getWeather", "react", "report"],
       tools: {
@@ -71,10 +71,10 @@ export async function generateResponse(
     );
 
     return { success: true, response: text };
-  } catch (error) {
+  } catch (e) {
     return {
       success: false,
-      error: "Oops! Something went wrong, please try again later",
+      error: (e as Error)?.message
     };
   }
 }

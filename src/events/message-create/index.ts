@@ -33,20 +33,37 @@ export async function execute(message: Message) {
 
   const botId = client.user?.id;
   const isPing = botId ? mentions.users.has(botId) : false;
-  const hasKeyword = keywords.some((k) =>
-    content.toLowerCase().includes(k.toLowerCase())
+  const matchedKeywords = keywords.filter((k) =>
+    (content.toLowerCase()).includes(k.toLowerCase())
   );
+  const hasKeyword = matchedKeywords.length > 0;
 
   logger.info(
-    { user: author.username, isPing, hasKeyword, content, isDM },
+    { user: author.username, content },
     `[${ctxId}] Incoming message`
   );
 
   // Explicit triggers (ping/keyword/DM)
   if (isPing || hasKeyword || isDM) {
     await clearUnprompted(ctxId);
-    logger.debug(
-      `[${ctxId}] Triggered by ping/keyword/DM. Idle counter cleared.`
+    logger.info(
+      {
+        trigger: isPing
+          ? "ping"
+          : hasKeyword
+            ? "keyword"
+            : isDM
+              ? "dm"
+              : "unknown",
+        triggeredBy: isPing
+          ? mentions.users.get(botId!)?.username ?? "unknown"
+          : isDM
+            ? author.username
+            : hasKeyword
+              ? matchedKeywords
+              : "unknown",
+      },
+      `[${ctxId}] Triggered reply — idle counter cleared`
     );
 
     const { messages, hints, memories } = await buildChatContext(message);
@@ -120,8 +137,7 @@ async function handleBotReply({
   } else if (result.error) {
     logger.error(
       { error: result.error },
-      `[${ctxId}] Failed to generate response for "${author}"${
-        reason ? ` (${reason})` : ""
+      `[${ctxId}] Failed to generate response for "${author}"${reason ? ` (${reason})` : ""
       }`
     );
   }
