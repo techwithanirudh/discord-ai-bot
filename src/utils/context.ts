@@ -1,7 +1,7 @@
 import { getChannelName, getMessagesByChannel } from "@/lib/queries";
 import { convertToCoreMessages } from "@/utils/messages";
 import { getTimeInCity } from "@/utils/time";
-import { timezone, city, country } from "@/lib/constants";
+import { timezone, city, country } from "@/config";
 import { retrieveMemories } from "@mem0/vercel-ai-provider";
 import type { Message } from "discord.js";
 import type { CoreMessage } from "ai";

@@ -9,7 +9,7 @@ import { report } from "@/lib/ai/tools/report";
 import { getWeather } from "@/lib/ai/tools/get-weather";
 import type { CoreMessage } from "ai";
 import type { RequestHints } from "@/lib/ai/prompts";
-import { discord } from "@/lib/ai/tools/discord";
+import { tools as discordTools, names as discordToolNames } from "@/lib/ai/tools/discord";
 
 export async function generateResponse(
   msg: Message,
@@ -29,12 +29,12 @@ export async function generateResponse(
         //     "Share your thoughts or just chat about it, as if you've stumbled upon an interesting topic in a group discussion.",
         // },
       ],
-      experimental_activeTools: ["getWeather", "react", "report", "discord"],
+      // experimental_activeTools: ["getWeather", "react", "report", ...discordToolNames],
       tools: {
         getWeather,
         react: react({ message: msg }),
         report: report({ message: msg }),
-        discord: discord({ message: msg, client: msg.client }),
+        ...discordTools({ client: msg.client })
       },
       system: systemPrompt({
         selectedChatModel: "chat-model",
@@ -43,7 +43,7 @@ export async function generateResponse(
       }),
       maxSteps: 10,
       onStepFinish({ text, toolCalls, toolResults, finishReason, usage }) {
-        logger.debug(
+        logger.info(
           {
             finishReason,
             response: text,
