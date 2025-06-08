@@ -28,6 +28,7 @@ export const myProvider = customProvider({
   languageModels: {
     // "chat-model": hackclub("llama-3.3-70b-versatile"),
     "chat-model": openai("gpt-4.1-mini"),
+    "reasoning-model": openai("o4-mini"),
     "artifact-model": hackclub("llama-3.3-70b-versatile"),
   },
   imageModels: {

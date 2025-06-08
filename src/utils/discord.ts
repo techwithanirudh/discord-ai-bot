@@ -1,6 +1,3 @@
-// discord-tools/common.ts
-import { SnowflakeUtil } from "discord.js";
-
 export const safe = (val: any): any => {
   if (val === null || val === undefined) return val;
   if (["string", "number", "boolean"].includes(typeof val)) return val;
