@@ -43,21 +43,21 @@ export async function generateResponse(
       }),
       maxSteps: 10,
       onStepFinish({ text, toolCalls, toolResults, finishReason, usage }) {
-        logger.info(
-          {
-            finishReason,
-            response: text,
-            usage: usage ?? "No usage data available",
-            toolSummary:
-              toolCalls?.map((call, index) => ({
-                index,
-                name: call.toolName,
-                arguments: call.args,
-                result: toolResults?.[index] ?? "No result",
-              })) ?? "No tool calls made",
-          },
-          "Tool execution step finished."
-        );
+        // logger.info(
+        //   {
+        //     finishReason,
+        //     response: text,
+        //     usage: usage ?? "No usage data available",
+        //     toolSummary:
+        //       toolCalls?.map((call, index) => ({
+        //         index,
+        //         name: call.toolName,
+        //         arguments: call.args,
+        //         result: toolResults?.[index] ?? "No result",
+        //       })) ?? "No tool calls made",
+        //   },
+        //   "Tool execution step finished."
+        // );
       },
     });
 
