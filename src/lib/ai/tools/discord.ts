@@ -6,13 +6,6 @@ import { myProvider } from "@/lib/ai/providers";
 import logger from "@/lib/logger";
 import { agentPrompt } from "../prompts";
 
-function scrub(obj: any) {
-  return JSON.stringify(obj, (_, value) =>
-    typeof value === "bigint" ? value.toString() : value
-  );
-}
-
-/* ----------------------------------------------------------------------- */
 interface DiscordToolProps {
   client: Client;
   message: Message;
@@ -108,4 +101,10 @@ export const discord = ({ client, message }: DiscordToolProps) =>
       return { content: String(final) };
     },
   });
+
+function scrub(obj: any) {
+  return JSON.stringify(obj, (_, value) =>
+    typeof value === "bigint" ? value.toString() : value
+  );
+}
 
