@@ -7,6 +7,7 @@ import {
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
+import { openai } from "@ai-sdk/openai";
 import { env } from "@/env";
 
 const hackclub = createOpenAICompatible({
@@ -26,7 +27,7 @@ const google = createGoogleGenerativeAI({
 export const myProvider = customProvider({
   languageModels: {
     // "chat-model": hackclub("llama-3.3-70b-versatile"),
-    "chat-model": google("gemini-2.5-flash-preview-05-20"),
+    "chat-model": openai("gpt-4.1-mini"),
     "artifact-model": hackclub("llama-3.3-70b-versatile"),
   },
   imageModels: {
