@@ -14,11 +14,11 @@ interface DiscordToolProps {
 export const discord = ({ client, message }: DiscordToolProps) =>
   tool({
     description:
-      "Agent-loop Discord automation. Give it one natural-language ACTION " +
+      "Agent-loop Discord automation. Give it natural-language actions " +
       "and it will iterate with inner tools (`runDiscordCode`, `calculate`) " +
       "until it calls `answer`, which terminates the loop. " +
       "Use a **single agent loop** to complete multi-step or multi-user tasks. " +
-      "For example, to DM multiple users, don't spawn separate agents for each user. " +
+      "For example, to DM multiple users or create multiple channels, don't spawn separate agents for each user. " +
       "Instead, instruct the agent clearly in one go: " +
       "e.g., 'DM all members named X, Y, and Z who are in the server MyServer.' " +
       "This lets the agent fetch server data, filter users, and act accordingly. " +
@@ -27,7 +27,7 @@ export const discord = ({ client, message }: DiscordToolProps) =>
     parameters: z.object({
       action: z
         .string()
-        .describe("e.g. 'DM hello to every member of #general'"),
+        .describe("e.g. 'Send a DM to Anirudh saying hi'"),
     }),
 
     execute: async ({ action }) => {
@@ -75,7 +75,7 @@ export const discord = ({ client, message }: DiscordToolProps) =>
               const res = await runInSandbox(code);
               if (res.ok) {
                 logger.info({ code, out: scrub(res.value) }, "Snippet ok");
-                return { success: true, output: res.value };
+                return { success: true, output: scrub(res.value) };
               }
               logger.warn({ err: res.error }, "Snippet failed");
               return { success: false, error: res.error };
