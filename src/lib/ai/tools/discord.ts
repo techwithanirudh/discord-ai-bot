@@ -2,16 +2,19 @@ import { generateText, tool } from "ai";
 import { z } from "zod";
 import type { Client, Message } from "discord.js";
 import { myProvider } from "@/lib/ai/providers";
-import { safe } from "@/utils/discord"; // same tiny serializer you used earlier
+import { safe } from "@/utils/discord"; // tiny serializer for safe JSON
 import { agentPrompt } from "../prompts";
 import logger from "@/lib/logger";
 
-/* ------------------------------------------------------------ */
-/* Factory so we can inject Discord context at runtime          */
-/* ------------------------------------------------------------ */
 interface DiscordToolProps {
   client: Client;
   message: Message;
+}
+
+function safeStringify(obj: any) {
+  return JSON.stringify(obj, (_, value) =>
+    typeof value === "bigint" ? value.toString() : value
+  );
 }
 
 export const discord = ({ client, message }: DiscordToolProps) =>
@@ -20,11 +23,14 @@ export const discord = ({ client, message }: DiscordToolProps) =>
       "Agent-loop Discord automation. Give it one natural-language ACTION " +
       "and it will iterate with inner tools (`runDiscordCode`, `calculate`) " +
       "until it calls `answer`, which terminates the loop.",
+
     parameters: z.object({
       action: z.string().describe("e.g. 'send hello to Anirudh via DM'"),
     }),
+
     execute: async ({ action }) => {
-      logger.info(`Executing ${action}`);
+      logger.info({ action }, "Starting Discord agent...");
+
       const { toolCalls } = await generateText({
         model: myProvider.languageModel("reasoning-model"),
         system: agentPrompt,
@@ -32,12 +38,15 @@ export const discord = ({ client, message }: DiscordToolProps) =>
         tools: {
           execute: tool({
             description:
-              "Run Discord.js code. Variables in scope: client, message. Console output is not displayed; only return statements are shown.",
+              "Run Discord.js code. Variables in scope: client, message. " +
+              "Console output is not displayed; only return statements are shown.",
             parameters: z.object({
               code: z.string().min(1),
               reason: z.string(),
             }),
             execute: async ({ code, reason }) => {
+              // log each code execution attempt
+              logger.info({ reason }, "Executing Discord.js snippet");
               try {
                 const fn = new Function(
                   "client",
@@ -46,55 +55,50 @@ export const discord = ({ client, message }: DiscordToolProps) =>
                 ) as (c: Client, m: Message) => Promise<unknown>;
 
                 const raw = await fn(client, message);
+
+                const serialized = safeStringify(raw);
                 logger.debug(
-                  {
-                    response: JSON.stringify(raw),
-                  },
-                  `ran code for ${reason}`
+                  { response: serialized },
+                  "Discord.js snippet executed successfully"
                 );
 
-                return {
-                  success: true,
-                  output: raw ?? null,
-                };
+                return { success: true, output: raw ?? null };
               } catch (err: any) {
-                logger.error(`failed to execute code for ${reason}`, err);
+                logger.error(
+                  { reason, err: String(err) },
+                  "Error during Discord.js snippet execution"
+                );
                 return { success: false, error: String(err) };
               }
             },
           }),
 
           answer: tool({
-            description: "A tool for providing the final answer.",
+            description: "Tool for providing the final answer.",
             parameters: z.object({
               steps: z.array(
-                z.object({
-                  calculation: z.string(),
-                  reasoning: z.string(),
-                })
+                z.object({ calculation: z.string(), reasoning: z.string() })
               ),
               answer: z.string(),
             }),
-            // no execute function - invoking it will terminate the agent
           }),
         },
 
-        /* Agent must use at least one tool call */
         toolChoice: "required",
-
-        providerOptions: {
-          openai: { reasoningEffort: "low" },
-        },
-
+        providerOptions: { openai: { reasoningEffort: "low" } },
         maxSteps: 10,
       });
 
-      logger.info(`FINAL TOOL CALLS: ${JSON.stringify(toolCalls, null, 2)}`);
+      // log summary of AI output
+      logger.info(
+        { count: toolCalls.length, calls: safe(toolCalls) },
+        "AI agent completed loop"
+      );
 
-      return {
-        // @ts-expect-error type handling
-        content: toolCalls[0]?.args?.answer ?? "",
-      };
+      // @ts-expect-error type handling
+      const finalAnswer = toolCalls[0]?.args?.answer ?? "";
+      logger.info({ finalAnswer }, "Returning final answer");
+      return { content: finalAnswer };
     },
   });
 
