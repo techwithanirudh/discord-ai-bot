@@ -19,10 +19,16 @@ function safeStringify(obj: any) {
 
 export const discord = ({ client, message }: DiscordToolProps) =>
   tool({
-    description:
-      "Agent-loop Discord automation. Give it one natural-language ACTION " +
-      "and it will iterate with inner tools (`runDiscordCode`, `calculate`) " +
-      "until it calls `answer`, which terminates the loop.",
+  description:
+    "Agent-loop Discord automation. Give it one natural-language ACTION " +
+    "and it will iterate with inner tools (`runDiscordCode`, `calculate`) " +
+    "until it calls `answer`, which terminates the loop. " +
+    "Use a **single agent loop** to complete multi-step or multi-user tasks. " +
+    "For example, to DM multiple users, don't spawn separate agents for each user. " +
+    "Instead, instruct the agent clearly in one go: " +
+    "e.g., 'DM all members named X, Y, and Z who are in the server MyServer.' " +
+    "This lets the agent fetch server data, filter users, and act accordingly. " +
+    "Always include full context in your action to avoid ambiguous behavior.",
 
     parameters: z.object({
       action: z.string().describe("e.g. 'send hello to Anirudh via DM'"),
