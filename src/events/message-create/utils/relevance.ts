@@ -12,11 +12,11 @@ export async function assessRelevance(
 ): Promise<Probability> {
   try {
     const { object } = await generateObject({
-      model: myProvider.languageModel("artifact-model"),
+      model: myProvider.languageModel("relevance-model"),
       messages,
       schema: probabilitySchema,
       system: systemPrompt({
-        selectedChatModel: "artifact-model",
+        selectedChatModel: "relevance-model",
         requestHints: hints,
         memories,
       }),
