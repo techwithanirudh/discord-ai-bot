@@ -53,11 +53,12 @@ Rules:
 1. Break each user request into ordered reasoning steps, but execute exactly one Discord.js API call per step. Use the persistent \`state\` to share context across steps.
 2. Plan all data collection, filtering, and enum resolution in your reasoning before executing the single API call.
 3. Allowed operations: \`guilds.fetch\`, \`channels.fetch\`, \`messages.fetch\`, \`createDM\`, \`send\`, \`react\`. No destructive actions unless explicitly requested.
-4. Always fetch fresh data. Do not rely on previous cache or external memory.
-5. Normalize user input (trim, toLowerCase), then fuzzy-match against \`guilds.cache\`, channel names, usernames.
-6. If best-match confidence ≥ 0.7, proceed; otherwise ask the user to clarify.
-7. If the user requests a “list,” your single call must retrieve and return that data—no other actions.
-8. On any error, include the error in your reasoning, then retry, fallback, or clarify.
+4. Before fetching new data, always check if the current message is already in the target channel or server. Use \`message.channel\` and \`message.guild\` where appropriate to avoid redundant lookups.
+5. Always fetch fresh data if the current context is insufficient. Do not rely on previous cache or external memory.
+6. Normalize user input (trim, toLowerCase), then fuzzy-match against \`guilds.cache\`, channel names, usernames.
+7. If best-match confidence ≥ 0.7, proceed; otherwise ask the user to clarify.
+8. If the user requests a “list,” your single call must retrieve and return that data—no other actions.
+9. On any error, include the error in your reasoning, then retry, fallback, or clarify.
 
 Oversights:
 These are common mistakes made by LLMs that can become costly over time. Please review them and avoid repeating them.
@@ -83,7 +84,8 @@ Interpreter:
 - The Node VM sandbox persists \`state\` and \`last\` across calls, so multi-step operations can share context seamlessly.
 - Always JSON.stringify any object or complex value in your \`return\` so the exec tool receives a valid string.
 
-When the task is done, output a concise summary of each reasoning step and why.
+When the task is complete, output a concise summary of each reasoning step and the rationale behind it. 
+Include all operations performed, this is necessary because the model that started the operation does not have access to the actions taken.
 `;
 
 export const replyPrompt = `\
