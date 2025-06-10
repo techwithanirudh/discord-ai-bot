@@ -17,6 +17,19 @@ export async function generateResponse(
   memories: string
 ): Promise<{ success: boolean; response?: string; error?: string }> {
   try {
+    const system = systemPrompt({
+      selectedChatModel: "chat-model",
+      requestHints: hints,
+      memories,
+    });
+
+    logger.info('replying', {
+      messages,
+      hints,
+      memories,
+      system
+    })
+
     const { text } = await generateText({
       model: myProvider.languageModel("chat-model"),
       messages: [
@@ -32,12 +45,12 @@ export async function generateResponse(
         report: report({ message: msg }),
         discord: discord({ message: msg, client: msg.client })
       },
-      system: systemPrompt({
-        selectedChatModel: "chat-model",
-        requestHints: hints,
-        memories,
-      }),
+      system,
       maxSteps: 10
+    });
+
+    logger.info("Generated response", {
+      response: text
     });
 
     await addMemories(
@@ -50,6 +63,11 @@ export async function generateResponse(
       ] as any,
       { user_id: msg.author.id }
     );
+
+    logger.info("Added memories", {
+      userId: msg.author.id,
+      memories: text,
+    });    
 
     return { success: true, response: text };
   } catch (e) {

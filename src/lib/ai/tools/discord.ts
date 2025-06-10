@@ -1,6 +1,7 @@
-import { tool, generateText, generateObject } from "ai";
+import { tool, generateText } from "ai";
 import { z } from "zod";
 import type { Client, Message } from "discord.js";
+import { makeEmbed } from "@/utils/discord";
 import { myProvider } from "@/lib/ai/providers";
 import logger from "@/lib/logger";
 import { agentPrompt } from "../prompts";
@@ -16,8 +17,7 @@ export const discord = ({ client, message }: DiscordToolProps) =>
   tool({
     description:
       "Agent-loop Discord automation. Give it natural-language actions " +
-      "and it will iterate with inner tools (`runDiscordCode`, `calculate`) " +
-      "until it calls `answer`, which terminates the loop. " +
+      "and it will iterate with inner tools (`exec`, `answer`) until it calls `answer`, which terminates the loop." +
       "Use a single agent loop to complete multi-step or multi-user tasks. " +
       "For example, to DM multiple users or create multiple channels, don't spawn separate agents for each user. " +
       "Instead, instruct the agent clearly in one go: " +
@@ -31,86 +31,75 @@ export const discord = ({ client, message }: DiscordToolProps) =>
 
     execute: async ({ action }) => {
       logger.info({ action }, "Starting Discord agent");
+
       const status = await message.reply({
-        content: `starting action \`${action}\``,
+        embeds: [
+          makeEmbed({
+            title: "Starting Action",
+            description: `${action}`,
+            color: 0x0099ff,
+          })
+        ],
         allowedMentions: { repliedUser: false },
       });
 
-      const sharedState = {
-        state: {},
-        last: undefined,
-        client,
-        message,
-        console: {
-          log: (...args: any[]) => logger.debug({ args }, "Sandbox log"),
-        },
-      };
-
-      const { object: implementationPlan } = await generateObject({
-        model: myProvider.languageModel("reasoning-model"),
-        schema: z.object({
-          operations: z.array(
-            z.object({
-              purpose: z.string(),
-              code: z.string(),
-              operationType: z.enum(["create", "read", "update", "delete"]),
-            })
-          ),
-          estimatedComplexity: z.enum(["low", "medium", "high"]),
-        }),
-        system: agentPrompt,
-        prompt: `Analyze this request and create an implementation plan:\n${action}`,
-        providerOptions: { openai: { reasoningEffort: "medium" } },
-      });
-
-      logger.info(
-        { implementationPlan },
-        "Generated implementation plan"
-      );
-      status.edit({
-        content: `implementation plan created, starting agent loop.`,
-        allowedMentions: { repliedUser: false },
-      });
+      const sharedState: Record<string, any> = { state: {}, last: undefined, client, message };
 
       const { toolCalls } = await generateText({
-        model: myProvider.languageModel("chat-model"),
+        model: myProvider.languageModel("reasoning-model"),
         system: agentPrompt,
-        prompt:
-          `Implement the actions to support:\n${JSON.stringify(
-            implementationPlan
-          )}\n\n` + `Consider the overall feature context:\n${action}`,
+        prompt: `Perform the following steps:\n${action}`,
         tools: {
           exec: tool({
             description:
-              "Execute Discord.js (or plain JavaScript) inside a persistent, REPL-like sandbox. " +
-              "Use the `return` statement to retrieve data, since despite being REPL-like, it still requires explicit returns. " +
-              "Globals available: `client`, `message`, `state`, and `last`. Store any values you'll need later in `state`.",
+              "Run JavaScript/Discord.js in a sandbox. Use `return` to yield results. Globals: `client`, `message`, `state`, `last`." +
+              "Store any values you'll need later in `state`",
             parameters: z.object({
               code: z.string().min(1),
-              reason: z.string().describe("describe what this code is doing as a status update, e.g., 'fetching messages' or 'creating channel'. Avoid vague words like 'run' or 'do'."),
+              reason: z.string().describe("status update, e.g. 'fetching messages'"),
             }),
             execute: async ({ code, reason }) => {
               logger.info({ reason }, "Running code snippet");
-              status.edit({
-                content: `running code: \`${reason}\``,
+
+              await status.edit({
+                embeds: [
+                  makeEmbed({
+                    title: "Running Code",
+                    color: 0xffa500,
+                    fields: [
+                      { name: "Reason", value: reason },
+                      { name: "Code", value: code, code: true },
+                    ],
+                  }),
+                ],
                 allowedMentions: { repliedUser: false },
               });
+
               const result = await runInSandbox({
                 code,
                 context: sharedState,
                 allowRequire: true,
                 allowedModules: ["discord.js"],
               });
+
               if (result.ok) {
                 sharedState.last = result.result;
-                logger.info({ code, out: scrub(result.result) }, "Snippet ok");
+                logger.info({ out: scrub(result.result) }, "Snippet ok");
                 return { success: true, output: scrub(result.result) };
               }
+
               logger.warn({ err: result.error }, "Snippet failed");
-              status.edit({
-                content: `error, retrying: ${result.error}`,
+              await status.edit({
+                embeds: [
+                  makeEmbed({
+                    title: "Error, Retrying",
+                    description: result.error,
+                    color: 0xff0000,
+                  }),
+                ],
                 allowedMentions: { repliedUser: false },
               });
+
               return { success: false, error: result.error };
             },
           }),
@@ -127,13 +116,20 @@ export const discord = ({ client, message }: DiscordToolProps) =>
         maxSteps: 15,
       });
 
-      const final =
-        toolCalls.find((c) => c.toolName === "answer")?.args?.answer ?? "";
-      logger.info({ final }, "Done");
+      const finalAnswer = toolCalls.find((c) => c.toolName === "answer")?.args?.answer ?? "";
+      logger.info({ finalAnswer }, "Agent completed");
+
       await status.edit({
-        content: `task completed. stopping agent.`,
+        embeds: [
+          makeEmbed({
+            title: "Task Completed",
+            color: 0x00ff00,
+            fields: [{ name: "Result", value: finalAnswer }],
+          }),
+        ],
         allowedMentions: { repliedUser: false },
       });
-      return { content: String(final) };
+
+      return { content: finalAnswer };
     },
   });
