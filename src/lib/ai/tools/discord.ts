@@ -31,6 +31,10 @@ export const discord = ({ client, message }: DiscordToolProps) =>
 
     execute: async ({ action }) => {
       logger.info({ action }, "Starting Discord agent");
+      const status = await message.reply({
+        content: `starting action \`${action}\``,
+        allowedMentions: { repliedUser: false },
+      });
 
       const sharedState = {
         state: {},
@@ -59,6 +63,15 @@ export const discord = ({ client, message }: DiscordToolProps) =>
         providerOptions: { openai: { reasoningEffort: "medium" } },
       });
 
+      logger.info(
+        { implementationPlan },
+        "Generated implementation plan"
+      );
+      status.edit({
+        content: `implementation plan created, starting agent loop.`,
+        allowedMentions: { repliedUser: false },
+      });
+
       const { toolCalls } = await generateText({
         model: myProvider.languageModel("chat-model"),
         system: agentPrompt,
@@ -74,10 +87,14 @@ export const discord = ({ client, message }: DiscordToolProps) =>
               "Globals available: `client`, `message`, `state`, and `last`. Store any values you'll need later in `state`.",
             parameters: z.object({
               code: z.string().min(1),
-              reason: z.string(),
+              reason: z.string().describe("describe what this code is doing as a status update, e.g., 'fetching messages' or 'creating channel'. Avoid vague words like 'run' or 'do'."),
             }),
             execute: async ({ code, reason }) => {
               logger.info({ reason }, "Running code snippet");
+              status.edit({
+                content: `running code: \`${reason}\``,
+                allowedMentions: { repliedUser: false },
+              });
               const result = await runInSandbox({
                 code,
                 context: sharedState,
@@ -90,6 +107,10 @@ export const discord = ({ client, message }: DiscordToolProps) =>
                 return { success: true, output: scrub(result.result) };
               }
               logger.warn({ err: result.error }, "Snippet failed");
+              status.edit({
+                content: `error, retrying: ${result.error}`,
+                allowedMentions: { repliedUser: false },
+              });
               return { success: false, error: result.error };
             },
           }),
@@ -109,9 +130,10 @@ export const discord = ({ client, message }: DiscordToolProps) =>
       const final =
         toolCalls.find((c) => c.toolName === "answer")?.args?.answer ?? "";
       logger.info({ final }, "Done");
+      await status.edit({
+        content: `task completed. stopping agent.`,
+        allowedMentions: { repliedUser: false },
+      });
       return { content: String(final) };
     },
   });
-
-
-

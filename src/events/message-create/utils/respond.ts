@@ -1,7 +1,7 @@
 import type { Message } from "discord.js";
 import { generateText } from "ai";
 import { myProvider } from "@/lib/ai/providers";
-import { systemPrompt } from "@/lib/ai/prompts";
+import { replyPrompt, systemPrompt } from "@/lib/ai/prompts";
 import { addMemories } from "@mem0/vercel-ai-provider";
 import logger from "@/lib/logger";
 import { report } from "@/lib/ai/tools/report";
@@ -21,12 +21,10 @@ export async function generateResponse(
       model: myProvider.languageModel("chat-model"),
       messages: [
         ...messages,
-        // {
-        //   role: "system",
-        //   content:
-        //     "Respond to the following message just like you would in a casual chat. It's not a question; think of it as a conversation starter.\n" +
-        //     "Share your thoughts or just chat about it, as if you've stumbled upon an interesting topic in a group discussion.",
-        // },
+        {
+          role: "system",
+          content: replyPrompt,
+        },
       ],
       experimental_activeTools: ["getWeather", "report", "discord"],
       tools: {
@@ -39,24 +37,7 @@ export async function generateResponse(
         requestHints: hints,
         memories,
       }),
-      maxSteps: 10,
-      onStepFinish({ text, toolCalls, toolResults, finishReason, usage }) {
-        // logger.info(
-        //   {
-        //     finishReason,
-        //     response: text,
-        //     usage: usage ?? "No usage data available",
-        //     toolSummary:
-        //       toolCalls?.map((call, index) => ({
-        //         index,
-        //         name: call.toolName,
-        //         arguments: call.args,
-        //         result: toolResults?.[index] ?? "No result",
-        //       })) ?? "No tool calls made",
-        //   },
-        //   "Tool execution step finished."
-        // );
-      },
+      maxSteps: 10
     });
 
     await addMemories(
