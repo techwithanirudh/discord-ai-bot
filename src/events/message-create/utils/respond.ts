@@ -43,7 +43,7 @@ export async function generateResponse(
       tools: {
         getWeather,
         report: report({ message: msg }),
-        discord: discord({ message: msg, client: msg.client })
+        discord: discord({ message: msg, client: msg.client, messages })
       },
       system,
       maxSteps: 10

@@ -1,4 +1,4 @@
-import { tool, generateText } from "ai";
+import { tool, generateText, type CoreMessage } from "ai";
 import { z } from "zod";
 import type { Client, Message } from "discord.js";
 import { makeEmbed } from "@/utils/discord";
@@ -11,9 +11,10 @@ import { scrub } from "@/utils/discord";
 interface DiscordToolProps {
   client: Client;
   message: Message;
+  messages: CoreMessage[];
 }
 
-export const discord = ({ client, message }: DiscordToolProps) =>
+export const discord = ({ client, message, messages }: DiscordToolProps) =>
   tool({
     description:
       "Agent-loop Discord automation. Give it natural-language actions " +
@@ -26,7 +27,7 @@ export const discord = ({ client, message }: DiscordToolProps) =>
       "Always include full context in your action to avoid ambiguous behavior.",
 
     parameters: z.object({
-      action: z.string().describe("e.g. 'Send a DM to Anirudh saying hi'"),
+      action: z.string().describe("e.g. 'Send a DM to user123 saying hi'"),
     }),
 
     execute: async ({ action }) => {
@@ -48,7 +49,13 @@ export const discord = ({ client, message }: DiscordToolProps) =>
       const { toolCalls } = await generateText({
         model: myProvider.languageModel("reasoning-model"),
         system: agentPrompt,
-        prompt: `Perform the following steps:\n${action}`,
+        messages: [
+          ...messages,
+          {
+            role: "user",
+            content: `You are a Discord automation agent. Your task is to perform the following action:\n${action}`,
+          },
+        ],
         tools: {
           exec: tool({
             description:
