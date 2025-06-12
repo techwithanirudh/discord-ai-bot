@@ -1,5 +1,3 @@
-// utils/sandbox.ts
-
 export type SandboxContext = Record<string, any>;
 
 export interface SandboxOptions {
@@ -10,13 +8,6 @@ export interface SandboxOptions {
   allowedModules?: string[];
 }
 
-/**
- * Executes user code in a pseudo-sandbox with optional require whitelisting.
- * - Supports async/await
- * - Injects provided context
- * - Enforces execution timeout
- * - Optionally injects a restricted `require` that only allows whitelisted modules
- */
 export async function runInSandbox({
   code,
   context,
