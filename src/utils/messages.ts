@@ -1,41 +1,59 @@
 import logger from "@/lib/logger";
-import type { ModelMessage } from "ai";
-import { type Attachment as DiscordAttachment, type Collection, type Message as DiscordMessage } from "discord.js";
-import type { Attachment } from '@ai-sdk/ui-utils';
+import type { FilePart, ModelMessage } from "ai";
+import {
+  type Attachment as DiscordAttachment,
+  type Collection,
+  type Message as DiscordMessage,
+} from "discord.js";
 
-export function convertToCoreMessages(
+export async function convertToModelMessages(
   messages: Collection<string, DiscordMessage<boolean>>
-): Array<ModelMessage> {
-  return messages.map((message) => ({
-    // id: message.id,
-    role: message.author.bot ? "assistant" : "user",
-    content: `${message.author.username} (${message.author.displayName}) (${
-      message.author.id
-    }) (${message.guild?.name ?? "DM"}): ${message.content}`,
-    createdAt: message.createdAt,
-    experimental_attachments: processAttachments(message.attachments)
-  }));
+): Promise<Array<ModelMessage>> {
+  return await Promise.all(
+    messages.map(async (message) => ({
+      role: message.author.bot ? "assistant" : "user",
+      content: [
+        {
+          type: "text" as const,
+          text: `${message.author.username} (${message.author.displayName}) (${
+            message.author.id
+          }) (${message.guild?.name ?? "DM"}): ${message.content}`,
+        },
+        ...(await processAttachments(message.attachments)),
+      ],
+      createdAt: message.createdAt,
+    }))
+  );
 }
 
-export function processAttachments(
+export async function processAttachments(
   attachments: Collection<string, DiscordAttachment>
-): Array<Attachment> {
-  const validTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+): Promise<Array<FilePart>> {
+  const validTypes = ["image/jpeg", "image/png", "application/pdf"];
   const invalidAttachments = attachments.filter(
     (attachment) => !validTypes.includes(attachment.contentType ?? "")
   );
 
   if (invalidAttachments.size > 0) {
-    logger.warn(`Ignoring attachments: ${Array.from(invalidAttachments.values()).map(a => a.name).join(', ')}`);
+    logger.warn(
+      `Ignoring attachments: ${Array.from(invalidAttachments.values())
+        .map((a) => a.name)
+        .join(", ")}`
+    );
   }
 
-  const results = Array.from(attachments.values()).map((attachment) => {
-    return {
-      contentType: attachment.contentType ?? 'application/octet-stream',
-      url: attachment.url,
-      name: attachment.name
-    }
-  });
+  const results = await Promise.all(
+    attachments.map(async (attachment) => {
+      const response = await fetch(attachment.url);
+      const buffer = await response.arrayBuffer();
+      return {
+        type: "file" as const,
+        data: buffer,
+        mediaType: attachment.contentType ?? "application/octet-stream",
+        filename: attachment.name,
+      };
+    })
+  );
 
   return results;
 }

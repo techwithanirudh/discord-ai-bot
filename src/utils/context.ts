@@ -1,5 +1,5 @@
 import { getChannelName, getMessagesByChannel } from "@/lib/queries";
-import { convertToCoreMessages } from "@/utils/messages";
+import { convertToModelMessages } from "@/utils/messages";
 import { getTimeInCity } from "@/utils/time";
 import { timezone, city, country, initialMessages } from "@/config";
 import { retrieveMemories } from "@mem0/vercel-ai-provider";
@@ -21,7 +21,7 @@ export async function buildChatContext(
 
   if (!messages) {
     const raw = await getMessagesByChannel({ channel: msg.channel, limit: 50 });
-    messages = [...initialMessages as ModelMessage[], ...convertToCoreMessages(raw)];
+    messages = [...initialMessages as ModelMessage[], ...await convertToModelMessages(raw)];
   }
 
   if (!hints) {

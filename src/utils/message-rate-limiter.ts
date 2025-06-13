@@ -15,5 +15,5 @@ export async function clearUnprompted(ctxId: string): Promise<void> {
 export async function hasUnpromptedQuota(ctxId: string): Promise<boolean> {
   const val = await redis.get(redisKeys.messageCount(ctxId));
   const n = val ? Number(val) : 0;
-  return n < messageThreshold; // “<” keeps threshold strict
+  return n < messageThreshold;
 }

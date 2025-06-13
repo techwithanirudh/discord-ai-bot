@@ -18,7 +18,6 @@ export async function runInSandbox({
   | { ok: true; result: any }
   | { ok: false; error: string }
 > {
-  // If require is allowed, provide a safe wrapper
   if (allowRequire) {
     context.require = (moduleName: string) => {
       if (!allowedModules.includes(moduleName)) {
