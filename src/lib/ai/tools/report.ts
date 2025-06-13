@@ -1,7 +1,7 @@
 import logger from "@/lib/logger";
 import { tool } from "ai";
 import type { Message } from "discord.js";
-import { z } from "zod";
+import { z } from "zod/v4";
 
 export const report = ({ message }: { message: Message }) =>
   tool({

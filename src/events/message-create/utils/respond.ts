@@ -1,20 +1,23 @@
 import type { Message } from "discord.js";
-import { generateText } from "ai";
+import { generateText, stepCountIs } from "ai";
 import { myProvider } from "@/lib/ai/providers";
 import { replyPrompt, systemPrompt } from "@/lib/ai/prompts";
 import { addMemories } from "@mem0/vercel-ai-provider";
 import logger from "@/lib/logger";
 import { report } from "@/lib/ai/tools/report";
 import { getWeather } from "@/lib/ai/tools/get-weather";
-import type { CoreMessage } from "ai";
+import type { ModelMessage } from "ai";
 import type { RequestHints } from "@/lib/ai/prompts";
 import { discord } from "@/lib/ai/tools/discord";
 
 export async function generateResponse(
   msg: Message,
-  messages: CoreMessage[],
+  messages: ModelMessage[],
   hints: RequestHints,
-  memories: string
+  memories: string,
+  options?: {
+    memories?: boolean,
+  }
 ): Promise<{ success: boolean; response?: string; error?: string }> {
   try {
     const system = systemPrompt({
@@ -22,13 +25,6 @@ export async function generateResponse(
       requestHints: hints,
       memories,
     });
-
-    logger.info('replying', {
-      messages,
-      hints,
-      memories,
-      system
-    })
 
     const { text } = await generateText({
       model: myProvider.languageModel("chat-model"),
@@ -39,35 +35,28 @@ export async function generateResponse(
           content: replyPrompt,
         },
       ],
-      experimental_activeTools: ["getWeather", "report", "discord"],
+      activeTools: ["getWeather", "report", "discord"],
       tools: {
         getWeather,
         report: report({ message: msg }),
         discord: discord({ message: msg, client: msg.client, messages })
       },
       system,
-      maxSteps: 10
+      stopWhen: stepCountIs(10)
     });
 
-    logger.info("Generated response", {
-      response: text
-    });
-
-    await addMemories(
-      [
-        ...messages,
-        {
-          role: "assistant",
-          content: text,
-        },
-      ] as any,
-      { user_id: msg.author.id }
-    );
-
-    logger.info("Added memories", {
-      userId: msg.author.id,
-      memories: text,
-    });    
+    if (options?.memories) {
+      await addMemories(
+        [
+          ...messages,
+          {
+            role: "assistant",
+            content: text,
+          },
+        ] as any,
+        { user_id: msg.author.id }
+      );
+    }
 
     return { success: true, response: text };
   } catch (e) {

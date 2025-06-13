@@ -4,13 +4,13 @@ import { getTimeInCity } from "@/utils/time";
 import { timezone, city, country } from "@/config";
 import { retrieveMemories } from "@mem0/vercel-ai-provider";
 import type { Message } from "discord.js";
-import type { CoreMessage } from "ai";
+import type { ModelMessage } from "ai";
 import type { RequestHints } from "@/lib/ai/prompts";
 
 export async function buildChatContext(
   msg: Message,
   opts?: {
-    messages?: CoreMessage[];
+    messages?: ModelMessage[];
     hints?: RequestHints;
     memories?: string;
   }

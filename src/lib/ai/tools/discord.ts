@@ -1,5 +1,5 @@
-import { tool, generateText, type CoreMessage } from "ai";
-import { z } from "zod";
+import { tool, generateText, type ModelMessage, stepCountIs } from "ai";
+import { z } from "zod/v4";
 import type { Client, Message } from "discord.js";
 import { makeEmbed } from "@/utils/discord";
 import { myProvider } from "@/lib/ai/providers";
@@ -11,7 +11,7 @@ import { scrub } from "@/utils/discord";
 interface DiscordToolProps {
   client: Client;
   message: Message;
-  messages: CoreMessage[];
+  messages: ModelMessage[];
 }
 
 export const discord = ({ client, message, messages }: DiscordToolProps) =>
@@ -120,7 +120,7 @@ export const discord = ({ client, message, messages }: DiscordToolProps) =>
           }),
         },
         toolChoice: "required",
-        maxSteps: 15,
+        stopWhen: stepCountIs(15),
       });
 
       const finalAnswer = toolCalls.find((c) => c.toolName === "answer")?.args?.answer ?? "";
