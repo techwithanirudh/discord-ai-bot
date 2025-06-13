@@ -7,7 +7,7 @@ import {
   getUnprompted,
   clearUnprompted,
   hasUnpromptedQuota,
-} from "@/utils/unprompted-counter";
+} from "@/utils/message-rate-limiter";
 import { ratelimit, redisKeys, redis } from "@/lib/kv";
 import { reply as staggeredReply } from "@/utils/delay";
 
