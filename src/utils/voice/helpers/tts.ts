@@ -5,7 +5,7 @@ import logger from '@/lib/logger';
 const client = new AssemblyAI({ apiKey: env.ASSEMBLYAI_API_KEY });
 
 export async function transcribeStream(
-  pcmStream: NodeJS.ReadableStream,
+  stream: NodeJS.ReadableStream,
 ): Promise<string> {
   const transcriber = client.realtime.transcriber({ sampleRate: 48000 });
   const parts: string[] = [];
@@ -17,13 +17,13 @@ export async function transcribeStream(
       parts.push(data.text.trim());
     }
   });
-  transcriber.on('error', (err) => logger.error('AssemblyAI error:', err));
+  transcriber.on('error', (error) => logger.error({ error }, 'AssemblyAI error'));
 
   return new Promise(async (resolve, reject) => {
     transcriber.on('close', () => resolve(parts.join(' ')));
     await transcriber.connect();
-    pcmStream.on('data', (chunk) => transcriber.sendAudio(chunk));
-    pcmStream.on('end', () => transcriber.close());
-    pcmStream.on('error', reject);
+    stream.on('data', (chunk) => transcriber.sendAudio(chunk));
+    stream.on('end', () => transcriber.close());
+    stream.on('error', reject);
   });
 }

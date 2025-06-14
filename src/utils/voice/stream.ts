@@ -1,18 +1,10 @@
-import { pipeline } from 'node:stream/promises';
 import { AudioPlayer, EndBehaviorType, VoiceConnection, type VoiceReceiver } from '@discordjs/voice';
 import * as prism from 'prism-media';
-import type { ChatInputCommandInteraction, User } from 'discord.js';
-import { AssemblyAI } from 'assemblyai';
-import { env } from '@/env';
-import { generateText } from 'ai';
-import { myProvider } from '@/lib/ai/providers';
+import type { ChatInputCommandInteraction } from 'discord.js';
 import logger from '@/lib/logger';
-import { playAudio, speak } from './helpers';
+import { getAIResponse, playAudio, speak } from './helpers';
 import { voice } from '@/config';
-
-const client = new AssemblyAI({
-  apiKey: env.ASSEMBLYAI_API_KEY,
-});
+import { transcribeStream } from './helpers'; // <-- Use your helper!
 
 export async function createListeningStream(
   connection: VoiceConnection,
@@ -35,61 +27,37 @@ export async function createListeningStream(
     rate: 48000,
   });
 
-  const transcriber = client.realtime.transcriber({ sampleRate: 48000 });
+  try {
+    logger.info('Listening for speech...');
+    const transcript = await transcribeStream(decoder);
 
-  // --- Handle AssemblyAI events ---
-  let transcription = '';
-
-  transcriber.on('open', ({ sessionId }) => {
-    logger.info(`Session started: ${sessionId}`);
-  });
-
-  transcriber.on('transcript', (transcript) => {
-    if (transcript.message_type === 'FinalTranscript') {
-      logger.info(`Final transcript:`, transcript.text);
-      transcription += transcript.text + ' ';
-    }
-  });
-
-  transcriber.on('error', (err) => {
-    logger.error(`Error:`, err);
-  });
-
-  transcriber.on('close', async (code, reason) => {
-    logger.info(`Session closed:`, code, reason);
-    if (!transcription.trim()) {
-      logger.info('No speech detected.');
-      listenAndRespond(connection, receiver, message);
-      return;
+    if (!transcript) {
+      logger.info('No speech detected. Listening again...');
+      return createListeningStream(connection, receiver, player, interaction); 
     }
 
-    const { text } = await generateText({
-      model: myProvider.languageModel('chat-model'),
-      prompt: transcription.trim(),
-    });
-    logger.info({text}, `response:`);
+    logger.info({ transcript }, 'Transcription result');
+
+    const text = await getAIResponse(transcript);
+    logger.info({ text }, 'AI response');
 
     const audio = await speak({
       text,
       voiceId: voice.id,
       model: voice.model,
     });
-  
+
     if (audio) {
       playAudio(player, audio);
+      // Optionally: Wait until playback ends before restarting listening
+      player.once('idle', () => createListeningStream(connection, receiver, player, interaction));
     } else {
-      listenAndRespond(connection, receiver, message); // Loop anyway
+      logger.warn('TTS failed. Listening again...');
+      createListeningStream(connection, receiver, player, interaction);
     }
-  });
-
-  await transcriber.connect();
-
-  // --- Pipe Discord audio to AssemblyAI (through decoder) ---
-  opusStream.pipe(decoder).on('data', (chunk) => {
-    transcriber.sendAudio(chunk);
-  });
-
-  opusStream.on('end', async () => {
-    await transcriber.close();
-  });
+  } catch (error) {
+    logger.error({ error }, 'Error in listening stream');
+    // Try again after a small delay (avoids infinite error loops)
+    setTimeout(() => createListeningStream(connection, receiver, player, interaction), 1000);
+  }
 }
