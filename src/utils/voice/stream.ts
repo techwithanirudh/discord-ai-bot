@@ -21,15 +21,15 @@ export async function createListeningStream(
     },
   });
 
-  const decoder = new prism.opus.Decoder({
+  const stream = opusStream.pipe(new prism.opus.Decoder({
     frameSize: 960,
     channels: 2,
     rate: 48000,
-  });
+  }));
 
   try {
     logger.info('Listening for speech...');
-    const transcript = await transcribeStream(decoder);
+    const transcript = await transcribeStream(stream);
 
     if (!transcript) {
       logger.info('No speech detected. Listening again...');
