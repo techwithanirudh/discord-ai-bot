@@ -38,6 +38,7 @@
     "libsodium-wrappers": "^0.7.15",
     "pino": "^9.6.0",
     "pino-pretty": "^13.0.0",
+    "prism-media": "^2.0.0-alpha.0",
     "zod": "^3.25.63"
   },
   "devDependencies": {
