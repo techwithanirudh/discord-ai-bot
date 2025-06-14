@@ -5,6 +5,14 @@ import { deployCommands } from "@/deploy-commands";
 import logger from "@/lib/logger";
 import { beginStatusUpdates } from "@/utils/status";
 import { env } from "@/env";
+import { createAudioPlayer } from "@discordjs/voice";
+import { playSong } from "./utils/voice/helpers";
+
+// todo: global audio player not local like in here 
+// const player = createAudioPlayer();
+// not in commands
+
+const player = createAudioPlayer();
 
 export const client = new Client({
   intents: [
@@ -21,9 +29,14 @@ export const client = new Client({
   partials: [Partials.Channel, Partials.Message],
 });
 
-client.once(Events.ClientReady, (client) => {
+client.once(Events.ClientReady, async (client) => {
   logger.info(`Logged in as ${client.user.tag} (ID: ${client.user.id})`);
   logger.info("Bot is ready!");
+
+  await playSong(
+    player,
+    "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"
+  );
 
   beginStatusUpdates(client);
 });
@@ -43,6 +56,9 @@ client.on(Events.InteractionCreate, async (interaction) => {
   }
   const { commandName } = interaction;
   if (commands[commandName as keyof typeof commands]) {
+    // how do we pass player to commands?
+    interaction.player = player; // make player available in commands
+
     commands[commandName as keyof typeof commands].execute(interaction);
   }
 });

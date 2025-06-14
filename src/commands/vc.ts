@@ -1,24 +1,13 @@
-// src/commands/vc.ts
+import { connectToChannel, playSong } from "@/utils/voice/helpers";
 import {
   ChatInputCommandInteraction,
+  CommandInteraction,
   SlashCommandBuilder,
-  GuildMember,
 } from "discord.js";
-import {
-  joinVoiceChannel,
-  getVoiceConnection,
-  EndBehaviorType,
-  VoiceConnection,
-  VoiceConnectionStatus,
-} from "@discordjs/voice";
-import { STTConnection, sttEvents } from "@/utils/voice/stt";
-import { speakTts } from "@/utils/voice/tts";
-import { generateResponse } from "@/events/message-create/utils/respond";
-import { generateText } from "ai";
-import { myProvider } from "@/lib/ai/providers";
-
-type HistoryEntry = { speaker: string; text: string };
-const sessions = new Map<string, HistoryEntry[]>();
+import { createAudioPlayer } from "@discordjs/voice";
+import logger from "@/lib/logger";
+import { experimental_generateSpeech as generateSpeech } from "ai";
+import { openai } from "@ai-sdk/openai";
 
 export const data = new SlashCommandBuilder()
   .setName("vc")
@@ -33,96 +22,39 @@ export const data = new SlashCommandBuilder()
     s.setName("log").setDescription("Show VC conversation history")
   );
 
-export async function execute(interaction: ChatInputCommandInteraction) {
-  const sub = interaction.options.getSubcommand();
-  const member = interaction.member as GuildMember;
-  const guildId = interaction.guildId!;
-
-  if (!member.voice.channel) {
-    return interaction.reply("! but ur not in vc?");
+export async function execute(interaction: CommandInteraction) {
+  if (!interaction.isChatInputCommand() || !interaction.guild) {
+    return;
   }
 
-  let conn = getVoiceConnection(guildId);
+  const sub = interaction.options.getSubcommand();
+  const member = interaction.member;
+  const channel = member?.voice.channel;
 
   if (sub === "join") {
-    if (conn) return interaction.reply("! im already in vc?");
+    if (!channel) {
+      await interaction.reply("Join a voice channel then try again!");
+      return;
+    }
 
-    conn = joinVoiceChannel({
-      channelId: member.voice.channel.id,
-      guildId,
-      adapterCreator: member.voice.channel.guild.voiceAdapterCreator,
-    });
+    // const audio = await generateSpeech({
+    //   model: openai.speech('tts-1'),
+    //   text: 'Hello, world!',
+    //   voice: 'alloy',
+    // });
 
-    // history store
-    sessions.set(member.voice.channel.id, []);
+    // await playSong(player, audio.audio);
 
-    // on each speaker start
-    conn.receiver.speaking.on(VoiceConnectionStatus., (userId) => {
-      if (userId === interaction.client.user.id) return;
-      const user = member.voice.channel!.guild.members.cache.get(userId);
-      if (!user) return;
+    try {
+      const connection = await connectToChannel(channel);
+      connection.subscribe(interaction.player);
 
-      const stt = new STTConnection(user);
-      const stream = conn!
-        .receiver.subscribe(userId, {
-          end: { behavior: EndBehaviorType.AfterSilence, duration: 250 },
-          mode: "pcm",
-        });
-
-      // collect buffers
-      stream.on("data", (chunk) => stt.write(chunk as Buffer));
-
-      // when user stops talking, finish and transcribe
-      stream.on("end", () => void stt.finish());
-    });
-
-    return interaction.reply(
-      "joining"
-    );
-  }
-
-  // LEAVE
-  if (sub === "leave") {
-    if (!conn) return interaction.reply("! im not in vc?");
-    sessions.delete(conn.joinConfig.channelId);
-    conn.destroy();
-    return interaction.reply("! ok bye D:");
-  }
-
-  // LOG
-  if (sub === "log") {
-    if (!conn) return interaction.reply("! im not in vc?");
-    const history = sessions.get(conn.joinConfig.channelId);
-    if (!history) return interaction.reply("! no log for this vc");
-    const log = history.map((m) => `${m.speaker}: ${m.text}`).join("\n");
-    return interaction.reply(`! \`\`\`VC history:\n${log}\`\`\``);
+      await interaction.reply(`Joined ${channel.name}`);
+    } catch (error) {
+      /**
+       * Unable to connect to the voice channel within 30 seconds :(
+       */
+      logger.error(error);
+    }
   }
 }
-
-// when transcription finishes
-sttEvents.on(
-  "recognized",
-  async (member: GuildMember, text: string) => {
-    const conn = getVoiceConnection(member.guild.id) as VoiceConnection;
-    if (!conn) return;
-    const hist = sessions.get(member.voice.channel!.id);
-    if (!hist) return;
-
-    hist.push({ speaker: member.displayName, text });
-    if (hist.length > 10) hist.shift();
-
-
-    const { text: response } = await generateText({
-      model: myProvider.languageModel("chat-model"),
-      messages: [
-        ...hist.map((m) => ({
-          role: m.speaker === member.displayName ? "user" : "assistant",
-          content: m.text,
-        }))
-      ]
-    });
-
-    hist.push({ speaker: "bob", text: response });
-    await speakTts(conn, response);
-  }
-);
