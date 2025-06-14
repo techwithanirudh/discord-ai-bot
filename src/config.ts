@@ -1,6 +1,6 @@
 import { ActivityType } from "discord.js";
 
-export const keywords = ["zenix", "zenith", "ai", "bot"];
+export const keywords = ["zenix", "zenith", "gpt", "llm", "ai", "bot"];
 export const country = "Greece";
 export const city = "Athens";
 export const timezone = "Europe/Athens";
