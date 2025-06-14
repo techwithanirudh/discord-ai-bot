@@ -1,11 +1,13 @@
 import { CommandInteraction, SlashCommandBuilder } from "discord.js";
 import {
+    createAudioPlayer,
   entersState,
   getVoiceConnection,
   joinVoiceChannel,
   VoiceConnectionStatus,
 } from "@discordjs/voice";
 import type { ChatInputCommandInteraction, Snowflake } from "discord.js";
+import { createListeningStream } from "@/utils/voice/stream";
 
 export const data = new SlashCommandBuilder()
   .setName("join")
@@ -40,9 +42,12 @@ export async function execute(
     await entersState(connection, VoiceConnectionStatus.Ready, 20_000);
     const receiver = connection.receiver;
 
+    const player = createAudioPlayer();
+    connection.subscribe(player);
+
     receiver.speaking.on("start", async (userId) => {
       const user = await interaction.client.users.fetch(userId);
-      await createListeningStream(receiver, user);
+      await createListeningStream(receiver, player, user);
     });
   } catch (error) {
     console.warn(error);
