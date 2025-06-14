@@ -1,5 +1,5 @@
 import { tool, generateText, type ModelMessage, stepCountIs } from "ai";
-import { z } from "zod/v4";
+import { success, z } from "zod/v4";
 import type { Client, Message } from "discord.js";
 import { makeEmbed } from "@/utils/discord";
 import { myProvider } from "@/lib/ai/providers";
@@ -39,12 +39,17 @@ export const discord = ({ client, message, messages }: DiscordToolProps) =>
             title: "Starting Action",
             description: `${action}`,
             color: 0x0099ff,
-          })
+          }),
         ],
         allowedMentions: { repliedUser: false },
       });
 
-      const sharedState: Record<string, any> = { state: {}, last: undefined, client, message };
+      const sharedState: Record<string, any> = {
+        state: {},
+        last: undefined,
+        client,
+        message,
+      };
 
       const { toolCalls } = await generateText({
         model: myProvider.languageModel("reasoning-model"),
@@ -63,7 +68,9 @@ export const discord = ({ client, message, messages }: DiscordToolProps) =>
               "Store any values you'll need later in `state`",
             parameters: z.object({
               code: z.string().min(1),
-              reason: z.string().describe("status update, e.g. 'fetching messages'"),
+              reason: z
+                .string()
+                .describe("status update, e.g. 'fetching messages'"),
             }),
             execute: async ({ code, reason }) => {
               logger.info({ reason }, "Running code snippet");
@@ -115,6 +122,7 @@ export const discord = ({ client, message, messages }: DiscordToolProps) =>
             description: "Finish the loop with a final answer.",
             parameters: z.object({
               reasoning: z.string(),
+              success: z.boolean(),
               answer: z.string(),
             }),
           }),
@@ -123,20 +131,29 @@ export const discord = ({ client, message, messages }: DiscordToolProps) =>
         stopWhen: stepCountIs(15),
       });
 
-      const finalAnswer = toolCalls.find((c) => c.toolName === "answer")?.args?.answer ?? "";
-      logger.info({ finalAnswer }, "Agent completed");
+      const answer = toolCalls.find((c) => c.toolName === "answer")?.args ?? {
+        reasoning: "No answer provided",
+        success: false,
+        answer: "No answer provided",
+      };
+
+      logger.info({ ...answer }, "Agent completed");
 
       await status.edit({
         embeds: [
           makeEmbed({
-            title: "Task Completed",
-            color: 0x00ff00,
-            fields: [{ name: "Result", value: finalAnswer }],
+            title: answer?.success ? "Task Completed" : "Task Failed",
+            color: answer?.success ? 0x00ff00 : 0xff0000,
+            fields: [
+              { name: "Answer", value: answer?.answer },
+              { name: "Reasoning", value: answer?.reasoning }
+            ],
           }),
         ],
         allowedMentions: { repliedUser: false },
       });
 
-      return { content: finalAnswer };
+      return { ...answer };
     },
   });
+
