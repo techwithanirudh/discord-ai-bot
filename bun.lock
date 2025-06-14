@@ -45,6 +45,9 @@
       },
     },
   },
+  "trustedDependencies": [
+    "node-crc",
+  ],
   "packages": {
     "@ai-sdk/anthropic": ["@ai-sdk/anthropic@1.1.12", "", { "dependencies": { "@ai-sdk/provider": "1.0.9", "@ai-sdk/provider-utils": "2.1.10" }, "peerDependencies": { "zod": "^3.0.0" } }, "sha512-EygyzN8Ng5r4kj5hI2ONn1HQv0Z0NJKAQqBu4U3ZE9pKotjYuU9xkvvyteJwhQiRm4qfpqCdWHeUuC99Q30grA=="],
 

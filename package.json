@@ -56,5 +56,8 @@
   },
   "peerDependencies": {
     "typescript": "^5"
-  }
+  },
+  "trustedDependencies": [
+    "node-crc"
+  ]
 }
