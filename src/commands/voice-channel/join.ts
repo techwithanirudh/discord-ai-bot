@@ -45,11 +45,7 @@ export async function execute(
     const player = createAudioPlayer();
     connection.subscribe(player);
 
-    receiver.speaking.on('start', async (userId) => {
-      console.log('spekain')
-      const user = await interaction.client.users.fetch(userId);
-      await createListeningStream(receiver, player, user);
-    });
+    await createListeningStream(connection, receiver, player, interaction);
   } catch (error) {
     console.warn(error);
 

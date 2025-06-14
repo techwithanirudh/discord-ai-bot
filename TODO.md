@@ -5,3 +5,8 @@
 
 Agent Isolation for each server, role based access control
 mention that u need to install rust curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh 
+
+
+Put commands like join and leave as a subcommand under VC, make an easierway to have subcommands rather clubbing in one file
+Stream back audio from ElevenLabs instead of non streaming
+Switch to AI SDK Voice leater

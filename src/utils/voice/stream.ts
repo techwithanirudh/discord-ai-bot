@@ -1,30 +1,27 @@
 import { pipeline } from 'node:stream/promises';
-import { EndBehaviorType, type VoiceReceiver } from '@discordjs/voice';
+import { AudioPlayer, EndBehaviorType, VoiceConnection, type VoiceReceiver } from '@discordjs/voice';
 import * as prism from 'prism-media';
-import type { User } from 'discord.js';
+import type { ChatInputCommandInteraction, User } from 'discord.js';
 import { AssemblyAI } from 'assemblyai';
 import { env } from '@/env';
 import { generateText } from 'ai';
 import { myProvider } from '@/lib/ai/providers';
 import logger from '@/lib/logger';
+import { playAudio, speak } from './helpers';
+import { voice } from '@/config';
 
 const client = new AssemblyAI({
   apiKey: env.ASSEMBLYAI_API_KEY,
 });
 
-async function listenAndRespond(connection, receiver, message) {
-  const audioStream = receiver.subscribe(message.author.id, {
-    end: {
-      behavior: EndBehaviorType.AfterSilence,
-      duration: 1000,
-    },
-  });
-}
-
 export async function createListeningStream(
+  connection: VoiceConnection,
   receiver: VoiceReceiver,
-  user: User,
+  player: AudioPlayer,
+  interaction: ChatInputCommandInteraction<'cached'>,
 ) {
+  const user = interaction.user;
+
   const opusStream = receiver.subscribe(user.id, {
     end: {
       behavior: EndBehaviorType.AfterSilence,
@@ -66,18 +63,20 @@ export async function createListeningStream(
       return;
     }
 
-    const chatGPTResponse = await generateText({
+    const { text } = await generateText({
       model: myProvider.languageModel('chat-model'),
       prompt: transcription.trim(),
     });
-    logger.info(`response:`, chatGPTResponse);
+    logger.info({text}, `response:`);
 
-    const audioPath = await convertTextToSpeech(chatGPTResponse);
-    if (audioPath) {
-      playAudioInVC(connection, audioPath, () => {
-        fs.unlink(audioPath, () => {}); // Clean up audio file
-        listenAndRespond(connection, receiver, message); // Loop for next
-      });
+    const audio = await speak({
+      text,
+      voiceId: voice.id,
+      model: voice.model,
+    });
+  
+    if (audio) {
+      playAudio(player, audio);
     } else {
       listenAndRespond(connection, receiver, message); // Loop anyway
     }

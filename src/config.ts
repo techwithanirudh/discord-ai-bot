@@ -28,7 +28,7 @@ export const initialMessages = [
   { role: 'assistant', content: 'zenix_bits: coding stuff idk lol' },
 ];
 
-export const audio = {
-  maxTransmissionGap: 5_000,
-  type: 'pulse',
+export const voice = {
+  id: 'EQIVtVkE7IWwwaRgwyPi',
+  model: 'eleven_multilingual_v2',
 };

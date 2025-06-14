@@ -29,6 +29,8 @@ export const env = createEnv({
     MEM0_API_KEY: z.string().min(1).startsWith('m0-'),
     // AssemblyAI
     ASSEMBLYAI_API_KEY: z.string().min(1),
+    // ElevenLabs
+    ELEVENLABS_API_KEY: z.string().min(1),
   },
 
   /**
