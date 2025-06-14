@@ -1,13 +1,20 @@
+import { audio } from "@/config";
 import { connectToChannel, playSong } from "@/utils/voice/helpers";
 import { openai } from "@ai-sdk/openai";
-import { createAudioPlayer } from "@discordjs/voice";
+import { createAudioPlayer, NoSubscriberBehavior } from "@discordjs/voice";
 import { experimental_generateSpeech as generateSpeech } from "ai";
 import { Events, Message } from "discord.js";
+import { Readable } from "node:stream";
 
 export const name = Events.MessageCreate;
 export const once = false;
 
-export const player = createAudioPlayer();
+export const player = createAudioPlayer({
+	behaviors: {
+		noSubscriber: NoSubscriberBehavior.Play,
+		maxMissedFrames: Math.round(audio.maxTransmissionGap / 20),
+	},
+});
 
 export async function execute(message: Message) {
   if (
@@ -34,7 +41,9 @@ export async function execute(message: Message) {
       });
   
       const uint8arr = audio.audio.uint8Array;
-      await playSong(player, uint8arr);
+      const readableStream = Readable.from([uint8arr]);
+
+      await playSong(player, readableStream);
 
       await message.reply("Playing now!");
     } catch (error) {

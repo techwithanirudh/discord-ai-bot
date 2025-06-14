@@ -62,7 +62,10 @@ export async function playSong(player: AudioPlayer, song: string | Readable) {
 	 * were using an Ogg or WebM source, then we could change this value. However, for now we
 	 * will leave this as arbitrary.
 	 */
-	const resource = createAudioResource(song, { inputType: StreamType.Arbitrary });
+	// Let FFmpeg probe and decode the incoming format automatically
+	const resource = createAudioResource(song, {
+		inputType: StreamType.Raw,
+	});
 
 	/**
 	 * We will now play this to the audio player. By default, the audio player will not play until
