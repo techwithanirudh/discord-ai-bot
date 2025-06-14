@@ -5,14 +5,9 @@ import { deployCommands } from "@/deploy-commands";
 import logger from "@/lib/logger";
 import { beginStatusUpdates } from "@/utils/status";
 import { env } from "@/env";
-import { createAudioPlayer } from "@discordjs/voice";
+import { player } from "./events/voice-channel";
 import { playSong } from "./utils/voice/helpers";
 
-// todo: global audio player not local like in here 
-// const player = createAudioPlayer();
-// not in commands
-
-const player = createAudioPlayer();
 
 export const client = new Client({
   intents: [
@@ -57,8 +52,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
   const { commandName } = interaction;
   if (commands[commandName as keyof typeof commands]) {
     // how do we pass player to commands?
-    interaction.player = player; // make player available in commands
-
     commands[commandName as keyof typeof commands].execute(interaction);
   }
 });

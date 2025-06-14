@@ -47,7 +47,7 @@ export async function execute(interaction: CommandInteraction) {
 
     try {
       const connection = await connectToChannel(channel);
-      connection.subscribe(interaction.player);
+      connection.subscribe(player);
 
       await interaction.reply(`Joined ${channel.name}`);
     } catch (error) {
