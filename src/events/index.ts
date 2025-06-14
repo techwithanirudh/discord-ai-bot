@@ -1,5 +1,5 @@
-import * as messageCreate from "./message-create";
+import * as messageCreate from './message-create';
 
 export const events = {
-  messageCreate
+  messageCreate,
 };

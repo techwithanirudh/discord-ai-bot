@@ -1,20 +1,20 @@
-import { CommandInteraction, SlashCommandBuilder } from "discord.js";
+import { CommandInteraction, SlashCommandBuilder } from 'discord.js';
 import {
-    createAudioPlayer,
+  createAudioPlayer,
   entersState,
   getVoiceConnection,
   joinVoiceChannel,
   VoiceConnectionStatus,
-} from "@discordjs/voice";
-import type { ChatInputCommandInteraction, Snowflake } from "discord.js";
-import { createListeningStream } from "@/utils/voice/stream";
+} from '@discordjs/voice';
+import type { ChatInputCommandInteraction, Snowflake } from 'discord.js';
+import { createListeningStream } from '@/utils/voice/stream';
 
 export const data = new SlashCommandBuilder()
-  .setName("join")
-  .setDescription("Joins the voice channel that you are in");
+  .setName('join')
+  .setDescription('Joins the voice channel that you are in');
 
 export async function execute(
-  interaction: ChatInputCommandInteraction<"cached">
+  interaction: ChatInputCommandInteraction<'cached'>,
 ) {
   await interaction.deferReply();
 
@@ -23,7 +23,7 @@ export async function execute(
   if (!connection) {
     if (!interaction.member?.voice.channel) {
       await interaction.followUp(
-        "Join a voice channel and then try that again!"
+        'Join a voice channel and then try that again!',
       );
 
       return;
@@ -45,7 +45,7 @@ export async function execute(
     const player = createAudioPlayer();
     connection.subscribe(player);
 
-    receiver.speaking.on("start", async (userId) => {
+    receiver.speaking.on('start', async (userId) => {
       const user = await interaction.client.users.fetch(userId);
       await createListeningStream(receiver, player, user);
     });
@@ -53,10 +53,9 @@ export async function execute(
     console.warn(error);
 
     await interaction.followUp(
-      "Failed to join voice channel within 20 seconds, please try again later!"
+      'Failed to join voice channel within 20 seconds, please try again later!',
     );
   }
 
-  await interaction.followUp("Ready!");
+  await interaction.followUp('Ready!');
 }
-

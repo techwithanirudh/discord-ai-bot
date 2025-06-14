@@ -1,11 +1,11 @@
-import { getChannelName, getMessagesByChannel } from "@/lib/queries";
-import { convertToModelMessages } from "@/utils/messages";
-import { getTimeInCity } from "@/utils/time";
-import { timezone, city, country, initialMessages } from "@/config";
-import { retrieveMemories } from "@mem0/vercel-ai-provider";
-import type { Message } from "discord.js";
-import type { ModelMessage } from "ai";
-import type { RequestHints } from "@/lib/ai/prompts";
+import { getChannelName, getMessagesByChannel } from '@/lib/queries';
+import { convertToModelMessages } from '@/utils/messages';
+import { getTimeInCity } from '@/utils/time';
+import { timezone, city, country, initialMessages } from '@/config';
+import { retrieveMemories } from '@mem0/vercel-ai-provider';
+import type { Message } from 'discord.js';
+import type { ModelMessage } from 'ai';
+import type { RequestHints } from '@/lib/ai/prompts';
 
 export async function buildChatContext(
   msg: Message,
@@ -13,7 +13,7 @@ export async function buildChatContext(
     messages?: ModelMessage[];
     hints?: RequestHints;
     memories?: string;
-  }
+  },
 ) {
   let messages = opts?.messages;
   let hints = opts?.hints;
@@ -21,7 +21,10 @@ export async function buildChatContext(
 
   if (!messages) {
     const raw = await getMessagesByChannel({ channel: msg.channel, limit: 50 });
-    messages = [...initialMessages as ModelMessage[], ...await convertToModelMessages(raw)];
+    messages = [
+      ...(initialMessages as ModelMessage[]),
+      ...(await convertToModelMessages(raw)),
+    ];
   }
 
   if (!hints) {
@@ -30,10 +33,10 @@ export async function buildChatContext(
       time: getTimeInCity(timezone),
       city,
       country,
-      server: msg.guild?.name ?? "DM",
+      server: msg.guild?.name ?? 'DM',
       joined: msg.guild?.members.me?.joinedTimestamp ?? 0,
-      status: msg.guild?.members.me?.presence?.status ?? "offline",
-      activity: msg.guild?.members.me?.presence?.activities[0]?.name ?? "none",
+      status: msg.guild?.members.me?.presence?.status ?? 'offline',
+      activity: msg.guild?.members.me?.presence?.activities[0]?.name ?? 'none',
     };
   }
 

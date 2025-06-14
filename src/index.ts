@@ -1,10 +1,10 @@
-import { Client, Events, GatewayIntentBits, Partials } from "discord.js";
-import { commands } from "@/commands";
-import { events } from "@/events";
-import { deployCommands } from "@/deploy-commands";
-import logger from "@/lib/logger";
-import { beginStatusUpdates } from "@/utils/status";
-import { env } from "@/env";
+import { Client, Events, GatewayIntentBits, Partials } from 'discord.js';
+import { commands } from '@/commands';
+import { events } from '@/events';
+import { deployCommands } from '@/deploy-commands';
+import logger from '@/lib/logger';
+import { beginStatusUpdates } from '@/utils/status';
+import { env } from '@/env';
 
 export const client = new Client({
   intents: [
@@ -17,14 +17,14 @@ export const client = new Client({
     GatewayIntentBits.DirectMessageTyping,
     GatewayIntentBits.DirectMessageReactions,
     GatewayIntentBits.MessageContent,
-    GatewayIntentBits.GuildVoiceStates
+    GatewayIntentBits.GuildVoiceStates,
   ],
   partials: [Partials.Channel, Partials.Message],
 });
 
 client.once(Events.ClientReady, async (client) => {
   logger.info(`Logged in as ${client.user.tag} (ID: ${client.user.id})`);
-  logger.info("Bot is ready!");
+  logger.info('Bot is ready!');
 
   beginStatusUpdates(client);
 });
@@ -34,7 +34,7 @@ client.on(Events.GuildCreate, async (guild) => {
 
   const channel = guild.systemChannel;
   if (channel) {
-    await channel.send("hi");
+    await channel.send('hi');
   }
 });
 

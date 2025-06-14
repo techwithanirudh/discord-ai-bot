@@ -1,7 +1,7 @@
-import { speed as speedConfig } from "@/config";
-import { sentences, normalize } from "./tokenize-messages";
-import { DMChannel, Message, TextChannel, ThreadChannel } from "discord.js";
-import logger from "@/lib/logger";
+import { speed as speedConfig } from '@/config';
+import { sentences, normalize } from './tokenize-messages';
+import { DMChannel, Message, TextChannel, ThreadChannel } from 'discord.js';
+import logger from '@/lib/logger';
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -11,13 +11,13 @@ function calculateDelay(text: string): number {
   const length = text.length;
   const baseSeconds = (() => {
     switch (speedMethod) {
-      case "multiply":
+      case 'multiply':
         return length * speedFactor;
-      case "add":
+      case 'add':
         return length + speedFactor;
-      case "divide":
+      case 'divide':
         return length / speedFactor;
-      case "subtract":
+      case 'subtract':
         return length - speedFactor;
       default:
         return length;
@@ -25,7 +25,7 @@ function calculateDelay(text: string): number {
   })();
 
   const punctuationCount = text
-    .split(" ")
+    .split(' ')
     .filter((w) => /[.!?]$/.test(w)).length;
   const extraMs = punctuationCount * 500;
 
@@ -49,7 +49,7 @@ export async function reply(message: Message, reply: string): Promise<void> {
   let isFirst = true;
 
   for (const raw of segments) {
-    const text = raw.toLowerCase().trim().replace(/\.$/, "");
+    const text = raw.toLowerCase().trim().replace(/\.$/, '');
     if (!text) continue;
 
     const { minDelay, maxDelay } = speedConfig;
@@ -67,7 +67,7 @@ export async function reply(message: Message, reply: string): Promise<void> {
         await channel.send(text);
       }
     } catch (error) {
-      logger.error({ error }, "Error sending message");
+      logger.error({ error }, 'Error sending message');
       break;
     }
   }

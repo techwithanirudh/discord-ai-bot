@@ -1,5 +1,5 @@
-import { redis, redisKeys } from "@/lib/kv";
-import { messageThreshold } from "@/config";
+import { redis, redisKeys } from '@/lib/kv';
+import { messageThreshold } from '@/config';
 
 export async function getUnprompted(ctxId: string): Promise<number> {
   const key = redisKeys.messageCount(ctxId);

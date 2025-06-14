@@ -1,9 +1,9 @@
-import type { Geo } from "@vercel/functions";
+import type { Geo } from '@vercel/functions';
 
 export interface RequestHints {
   time: string;
-  city: Geo["city"];
-  country: Geo["country"];
+  city: Geo['city'];
+  country: Geo['country'];
   server: string;
   channel: string;
   joined: number;
@@ -18,7 +18,7 @@ export const getRequestPromptFromHints = (requestHints: RequestHints) => `\
   requestHints.channel
 } channel.
   You joined the server on ${new Date(
-    requestHints.joined
+    requestHints.joined,
   ).toLocaleDateString()}.
   Your current status is ${requestHints.status} and your activity is ${
   requestHints.activity
@@ -168,9 +168,9 @@ export const systemPrompt = ({
 }) => {
   const requestPrompt = getRequestPromptFromHints(requestHints);
 
-  if (selectedChatModel === "chat-model") {
+  if (selectedChatModel === 'chat-model') {
     return `${regularPrompt}\n\n${requestPrompt}\n\n${toolsPrompt}\n\n<CONTEXT>${memories}</CONTEXT>`;
-  } else if (selectedChatModel === "relevance-model") {
+  } else if (selectedChatModel === 'relevance-model') {
     return `${regularPrompt}\n\n${requestPrompt}\n\n${artifactsPrompt}\n\n<CONTEXT>${memories}</CONTEXT>`;
   }
 };

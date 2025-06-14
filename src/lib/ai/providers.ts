@@ -2,18 +2,18 @@ import {
   customProvider,
   extractReasoningMiddleware,
   wrapLanguageModel,
-} from "ai";
+} from 'ai';
 
-import { createOpenRouter } from "@openrouter/ai-sdk-provider";
-import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
-import { createGoogleGenerativeAI } from "@ai-sdk/google";
-import { openai } from "@ai-sdk/openai";
-import { env } from "@/env";
+import { createOpenRouter } from '@openrouter/ai-sdk-provider';
+import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
+import { createGoogleGenerativeAI } from '@ai-sdk/google';
+import { openai } from '@ai-sdk/openai';
+import { env } from '@/env';
 
 const hackclub = createOpenAICompatible({
-  name: "hackclub",
+  name: 'hackclub',
   apiKey: env.HACKCLUB_API_KEY,
-  baseURL: "https://ai.hackclub.com",
+  baseURL: 'https://ai.hackclub.com',
 });
 
 const openrouter = createOpenRouter({
@@ -27,10 +27,10 @@ const google = createGoogleGenerativeAI({
 export const myProvider = customProvider({
   languageModels: {
     // "chat-model": hackclub("llama-3.3-70b-versatile"),
-    "chat-model": openai("gpt-4.1-mini"),
-    "reasoning-model": openai("o4-mini"),
-    "artifact-model": openai("gpt-4.1"),
-    "relevance-model": openai("gpt-4.1-nano")
+    'chat-model': openai('gpt-4.1-mini'),
+    'reasoning-model': openai('o4-mini'),
+    'artifact-model': openai('gpt-4.1'),
+    'relevance-model': openai('gpt-4.1-nano'),
     // "relevance-model": hackclub("llama-3.3-70b-versatile"),
   },
   imageModels: {

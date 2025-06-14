@@ -1,9 +1,9 @@
-import { EmbedBuilder, type APIEmbedField } from "discord.js";
+import { EmbedBuilder, type APIEmbedField } from 'discord.js';
 
 /**
  * Default language for code blocks when `code` is boolean or language not specified.
  */
-export const DEFAULT_CODE_LANGUAGE = "javascript";
+export const DEFAULT_CODE_LANGUAGE = 'javascript';
 
 export interface EmbedField {
   name: string;
@@ -30,7 +30,7 @@ export function makeEmbed(options: MakeEmbedOptions): EmbedBuilder {
 
   if (title) embed.setTitle(title);
   if (description) embed.setDescription(description);
-  if (typeof color === "number") embed.setColor(color);
+  if (typeof color === 'number') embed.setColor(color);
 
   if (fields && fields.length) {
     const apiFields: APIEmbedField[] = fields.map((f) => {
@@ -40,7 +40,7 @@ export function makeEmbed(options: MakeEmbedOptions): EmbedBuilder {
       let lang = DEFAULT_CODE_LANGUAGE;
 
       if (codeOpt) {
-        if (typeof codeOpt === "object") {
+        if (typeof codeOpt === 'object') {
           isEnabled = codeOpt.enabled !== false;
           if (codeOpt.language) {
             lang = codeOpt.language;
@@ -71,6 +71,6 @@ export function makeEmbed(options: MakeEmbedOptions): EmbedBuilder {
 
 export function scrub(obj: any) {
   return JSON.stringify(obj, (_, value) =>
-    typeof value === "bigint" ? value.toString() : value
+    typeof value === 'bigint' ? value.toString() : value,
   );
 }

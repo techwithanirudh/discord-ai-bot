@@ -1,14 +1,14 @@
-import type { Message } from "discord.js";
-import { generateText, stepCountIs } from "ai";
-import { myProvider } from "@/lib/ai/providers";
-import { replyPrompt, systemPrompt } from "@/lib/ai/prompts";
-import { addMemories } from "@mem0/vercel-ai-provider";
-import logger from "@/lib/logger";
-import { report } from "@/lib/ai/tools/report";
-import { getWeather } from "@/lib/ai/tools/get-weather";
-import type { ModelMessage } from "ai";
-import type { RequestHints } from "@/lib/ai/prompts";
-import { discord } from "@/lib/ai/tools/discord";
+import type { Message } from 'discord.js';
+import { generateText, stepCountIs } from 'ai';
+import { myProvider } from '@/lib/ai/providers';
+import { replyPrompt, systemPrompt } from '@/lib/ai/prompts';
+import { addMemories } from '@mem0/vercel-ai-provider';
+import logger from '@/lib/logger';
+import { report } from '@/lib/ai/tools/report';
+import { getWeather } from '@/lib/ai/tools/get-weather';
+import type { ModelMessage } from 'ai';
+import type { RequestHints } from '@/lib/ai/prompts';
+import { discord } from '@/lib/ai/tools/discord';
 
 export async function generateResponse(
   msg: Message,
@@ -16,33 +16,33 @@ export async function generateResponse(
   hints: RequestHints,
   memories: string,
   options?: {
-    memories?: boolean,
-  }
+    memories?: boolean;
+  },
 ): Promise<{ success: boolean; response?: string; error?: string }> {
   try {
     const system = systemPrompt({
-      selectedChatModel: "chat-model",
+      selectedChatModel: 'chat-model',
       requestHints: hints,
       memories,
     });
 
     const { text } = await generateText({
-      model: myProvider.languageModel("chat-model"),
+      model: myProvider.languageModel('chat-model'),
       messages: [
         ...messages,
         {
-          role: "system",
+          role: 'system',
           content: replyPrompt,
         },
       ],
-      activeTools: ["getWeather", "report", "discord"],
+      activeTools: ['getWeather', 'report', 'discord'],
       tools: {
         getWeather,
         report: report({ message: msg }),
-        discord: discord({ message: msg, client: msg.client, messages })
+        discord: discord({ message: msg, client: msg.client, messages }),
       },
       system,
-      stopWhen: stepCountIs(10)
+      stopWhen: stepCountIs(10),
     });
 
     if (options?.memories) {
@@ -50,11 +50,11 @@ export async function generateResponse(
         [
           ...messages,
           {
-            role: "assistant",
+            role: 'assistant',
             content: text,
           },
         ] as any,
-        { user_id: msg.author.id }
+        { user_id: msg.author.id },
       );
     }
 
