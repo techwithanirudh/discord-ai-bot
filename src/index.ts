@@ -5,8 +5,6 @@ import { deployCommands } from "@/deploy-commands";
 import logger from "@/lib/logger";
 import { beginStatusUpdates } from "@/utils/status";
 import { env } from "@/env";
-import { playSong } from "./utils/voice/helpers";
-import { player } from "./events/voice-channel";
 
 export const client = new Client({
   intents: [
@@ -27,11 +25,6 @@ export const client = new Client({
 client.once(Events.ClientReady, async (client) => {
   logger.info(`Logged in as ${client.user.tag} (ID: ${client.user.id})`);
   logger.info("Bot is ready!");
-  
-  await playSong(
-    player,
-    "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"
-  );
 
   beginStatusUpdates(client);
 });

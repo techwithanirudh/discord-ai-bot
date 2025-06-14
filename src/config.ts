@@ -27,3 +27,8 @@ export const initialMessages = [
   { role: "user", content: "tom_techy: what are you doing" },
   { role: "assistant", content: "zenix_bits: coding stuff idk lol" },
 ];
+
+export const audio = {
+	maxTransmissionGap: 5_000,
+	type: 'pulse',
+};
