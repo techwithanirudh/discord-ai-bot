@@ -13,3 +13,4 @@ Switch to AI SDK Voice leater
 seperate deepgram code into its seperate files
 probably switch to 11 labs
 Implement memory for the ai voic chat
+Add commit lint
