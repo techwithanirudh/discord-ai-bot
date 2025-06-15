@@ -1,5 +1,6 @@
 import {
   AudioPlayer,
+  createAudioResource,
   EndBehaviorType,
   type VoiceConnection,
   type VoiceReceiver,
@@ -40,9 +41,9 @@ export async function createListeningStream(
   const stt = deepgram.listen.live({
     smart_format: true,
     filler_words: true,
-    // interim_results: true,
+    interim_results: true,
     vad_events: true,
-    sample_rate: 48_000,
+    // sample_rate: 48_000,
     punctuate: true,
     model: 'nova-3',
     language: 'en-US',
@@ -52,15 +53,26 @@ export async function createListeningStream(
     stt.on(LiveTranscriptionEvents.Close, () => {
       logger.debug('[Deepgram] Connection closed.');
     });
-    stt.on(LiveTranscriptionEvents.Transcript, (data) => {
-      const transcript = data.channel.alternatives[0].transcript
-      if (data.speech_final && transcript.trim().length > 0) {
+
+    stt.on(LiveTranscriptionEvents.Transcript, async (data) => {
+      const transcript = data.channel.alternatives[0].transcript;
+      if (transcript.trim().length === 0) return;
+      player.pause(true);
+      if (data.speech_final) {
         logger.info({ transcript }, `[Deepgram] Transcript`);
+        const text = await getAIResponse(transcript);
+        const response = await deepgram.speak.request({ text }, { model: "aura-arcas-en" });
+        const stream = await response.getStream();
+        // const stream = discordTTS.getVoiceStream(text);
+        const resource = createAudioResource(stream, { inlineVolume: false });
+        player.play(resource);      
       }
     });
+
     stt.on(LiveTranscriptionEvents.Metadata, (data) => {
       logger.debug({ data }, `[Deepgram] Metadata`);
     });
+
     stt.on(LiveTranscriptionEvents.Error, (error) => {
       logger.error({ error }, `[Deepgram] Error`);
     });

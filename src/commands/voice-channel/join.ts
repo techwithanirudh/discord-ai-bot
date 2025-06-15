@@ -35,7 +35,7 @@ export async function execute(
       channelId: interaction.member.voice.channel.id,
       guildId: interaction.guild.id,
       selfDeaf: false,
-      selfMute: false,
+      selfMute: true,
     });
   }
 
@@ -45,8 +45,6 @@ export async function execute(
 
     const player = createAudioPlayer();
     connection.subscribe(player);
-
-    await playAudio(player, 'https://file-examples.com/storage/feb81a754e684c18da2d7c7/2017/11/file_example_MP3_700KB.mp3')
 
     receiver.speaking.on('start', async (userId) => {
       const user = await interaction.client.users.fetch(userId);
