@@ -4,8 +4,8 @@
 
 1. 🤖 [Introduction](#introduction)
 2. 🚀 [Tech Stack](#tech-stack)
-4. 📚 [Getting Started](#getting-started)
-5. 📝 [License](#license)
+3. 📚 [Getting Started](#getting-started)
+4. 📝 [License](#license)
 
 ## <a name="introduction">🤖 Introduction</a>
 
