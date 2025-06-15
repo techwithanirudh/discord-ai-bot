@@ -1,19 +1,19 @@
-import { Events, Message } from "discord.js";
-import { keywords } from "@/config";
-import { buildChatContext } from "@/utils/context";
-import { assessRelevance } from "./utils/relevance";
-import { generateResponse } from "./utils/respond";
+import { Events, Message } from 'discord.js';
+import { keywords } from '@/config';
+import { buildChatContext } from '@/utils/context';
+import { assessRelevance } from './utils/relevance';
+import { generateResponse } from './utils/respond';
 import {
   getUnprompted,
   clearUnprompted,
   hasUnpromptedQuota,
-} from "@/utils/message-rate-limiter";
-import { ratelimit, redisKeys, redis } from "@/lib/kv";
-import { reply as staggeredReply } from "@/utils/delay";
+} from '@/utils/message-rate-limiter';
+import { ratelimit, redisKeys, redis } from '@/lib/kv';
+import { reply as staggeredReply } from '@/utils/delay';
 
-import { getTrigger } from "@/utils/triggers";
-import { logTrigger, logIncoming, logReply } from "@/utils/log";
-import logger from "@/lib/logger";
+import { getTrigger } from '@/utils/triggers';
+import { logTrigger, logIncoming, logReply } from '@/utils/log';
+import logger from '@/lib/logger';
 
 export const name = Events.MessageCreate;
 export const once = false;
@@ -32,7 +32,7 @@ async function isChannelAllowed(message: Message): Promise<boolean> {
   const guildId = message.guild.id;
   const channelId = message.channel.id;
   const allowedChannels = await redis.smembers(
-    redisKeys.allowedChannels(guildId)
+    redisKeys.allowedChannels(guildId),
   );
 
   if (!allowedChannels || allowedChannels.length === 0) {
@@ -66,7 +66,7 @@ export async function execute(message: Message) {
 
     const { messages, hints, memories } = await buildChatContext(message);
     const result = await generateResponse(message, messages, hints, memories);
-    logReply(ctxId, author.username, result, "explicit trigger");
+    logReply(ctxId, author.username, result, 'explicit trigger');
     if (result.success && result.response) {
       await staggeredReply(message, result.response);
     }
@@ -86,7 +86,7 @@ export async function execute(message: Message) {
     message,
     messages,
     hints,
-    memories
+    memories,
   );
   logger.info({ reason, probability }, `[${ctxId}] Relevance check`);
 
@@ -98,7 +98,7 @@ export async function execute(message: Message) {
   await clearUnprompted(ctxId);
   logger.info(`[${ctxId}] Replying; idle counter reset`);
   const result = await generateResponse(message, messages, hints, memories);
-  logReply(ctxId, author.username, result, "high relevance");
+  logReply(ctxId, author.username, result, 'high relevance');
   if (result.success && result.response) {
     await staggeredReply(message, result.response);
   }

@@ -7,23 +7,23 @@ import {
   type Channel,
   type Collection,
   type Message as DiscordMessage,
-} from "discord.js";
+} from 'discord.js';
 
 export async function getMessagesByChannel({
   channel,
   limit,
 }: {
-  channel: DiscordMessage["channel"];
+  channel: DiscordMessage['channel'];
   limit?: number;
 }) {
   try {
     const messages = await channel.messages.fetch({ limit: limit ?? 100 });
     const sorted = messages.sort(
-      (a, b) => a.createdTimestamp - b.createdTimestamp
+      (a, b) => a.createdTimestamp - b.createdTimestamp,
     );
     return sorted;
   } catch (error) {
-    console.error("Failed to get messages by chat id from database", error);
+    console.error('Failed to get messages by chat id from database', error);
     throw error;
   }
 }
@@ -39,5 +39,5 @@ export function getChannelName(channel: Channel): string {
     return channel.name;
   }
 
-  return "N/A";
+  return 'N/A';
 }

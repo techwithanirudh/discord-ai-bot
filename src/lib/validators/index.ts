@@ -1,1 +1,1 @@
-export * from "./probability";
+export * from './probability';
