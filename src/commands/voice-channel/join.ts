@@ -58,3 +58,5 @@ export async function execute(
 
   await interaction.followUp('thanks for inviting me! joined');
 }
+
+c
