@@ -29,6 +29,5 @@ export const initialMessages = [
 ];
 
 export const voice = {
-  id: 'EQIVtVkE7IWwwaRgwyPi',
-  model: 'eleven_multilingual_v2',
+  model: 'aura-arcas-en',
 };

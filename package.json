@@ -34,7 +34,6 @@
     "@upstash/redis": "^1.34.8",
     "@vercel/functions": "^2.0.1",
     "ai": "^5.0.0-alpha.13",
-    "assemblyai": "^4.13.2",
     "compromise": "^14.14.4",
     "date-fns": "^4.1.0",
     "discord.js": "^14.19.3",

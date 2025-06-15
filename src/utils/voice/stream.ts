@@ -1,22 +1,17 @@
 import {
   AudioPlayer,
-  createAudioResource,
   EndBehaviorType,
-  type VoiceConnection,
   type VoiceReceiver,
 } from '@discordjs/voice';
 import * as prism from 'prism-media';
-import { StreamingTranscriber } from 'assemblyai';
-import type { ChatInputCommandInteraction, User } from 'discord.js';
+import type { User } from 'discord.js';
 import logger from '@/lib/logger';
-import { getAIResponse, playAudio, speak } from './helpers';
+import { getAIResponse, playAudio } from './helpers';
 import { voice } from '@/config';
-import { createClient, LiveTranscriptionEvents } from '@deepgram/sdk';
-
-const deepgram = createClient(process.env.DEEPGRAM_KEY);
+import { LiveTranscriptionEvents } from '@deepgram/sdk';
+import { speak, deepgram } from './helpers';
 
 export async function createListeningStream(
-  connection: VoiceConnection,
   receiver: VoiceReceiver,
   player: AudioPlayer,
   user: User,
@@ -41,9 +36,9 @@ export async function createListeningStream(
   const stt = deepgram.listen.live({
     smart_format: true,
     filler_words: true,
-    // interim_results: true,
+    interim_results: true,
     vad_events: true,
-    // sample_rate: 48_000,
+    sample_rate: 48_000,
     model: 'nova-3',
     language: 'en-US',
   });
@@ -61,14 +56,10 @@ export async function createListeningStream(
         logger.info({ transcript }, `[Deepgram] Transcript`);
         const text = await getAIResponse(transcript);
         logger.info({ text }, `[Deepgram] AI Response`);
-        const response = await deepgram.speak.request(
-          { text },
-          { model: 'aura-arcas-en' },
-        );
-        const stream = await response.getStream();
-        if (!stream) return;
+        const audio = speak({ text, model: voice.model })
+        if (!audio) return;
         // @ts-expect-error this is a ReadableStream
-        playAudio(player, stream);
+        playAudio(player, audio);
       }
     });
 

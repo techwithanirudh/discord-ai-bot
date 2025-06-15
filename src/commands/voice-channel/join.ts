@@ -48,7 +48,7 @@ export async function execute(
 
     receiver.speaking.on('start', async (userId) => {
       const user = await interaction.client.users.fetch(userId);
-      await createListeningStream(connection, receiver, player, user);
+      await createListeningStream(receiver, player, user);
     });
 
   } catch (error) {
