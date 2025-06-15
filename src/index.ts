@@ -1,4 +1,4 @@
-import { Client, GatewayIntentBits, Partials } from 'discord.js';
+import { Client, Events, GatewayIntentBits, Partials } from 'discord.js';
 import { commands } from '@/commands';
 import { events } from '@/events';
 import { deployCommands } from '@/deploy-commands';
@@ -17,18 +17,19 @@ export const client = new Client({
     GatewayIntentBits.DirectMessageTyping,
     GatewayIntentBits.DirectMessageReactions,
     GatewayIntentBits.MessageContent,
+    GatewayIntentBits.GuildVoiceStates,
   ],
   partials: [Partials.Channel, Partials.Message],
 });
 
-client.once('ready', (client) => {
+client.once(Events.ClientReady, async (client) => {
   logger.info(`Logged in as ${client.user.tag} (ID: ${client.user.id})`);
   logger.info('Bot is ready!');
 
   beginStatusUpdates(client);
 });
 
-client.on('guildCreate', async (guild) => {
+client.on(Events.GuildCreate, async (guild) => {
   await deployCommands({ guildId: guild.id });
 
   const channel = guild.systemChannel;
@@ -37,12 +38,13 @@ client.on('guildCreate', async (guild) => {
   }
 });
 
-client.on('interactionCreate', async (interaction) => {
+client.on(Events.InteractionCreate, async (interaction) => {
   if (!interaction.isCommand()) {
     return;
   }
   const { commandName } = interaction;
   if (commands[commandName as keyof typeof commands]) {
+    // @ts-expect-error todo: fix this
     commands[commandName as keyof typeof commands].execute(interaction);
   }
 });

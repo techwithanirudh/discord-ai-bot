@@ -27,3 +27,7 @@ export const initialMessages = [
   { role: 'user', content: 'tom_techy: what are you doing' },
   { role: 'assistant', content: 'zenix_bits: coding stuff idk lol' },
 ];
+
+export const voice = {
+  model: 'aura-arcas-en',
+};
