@@ -49,7 +49,6 @@ export async function execute(
     await playAudio(player, 'https://file-examples.com/storage/feb81a754e684c18da2d7c7/2017/11/file_example_MP3_700KB.mp3')
 
     receiver.speaking.on('start', async (userId) => {
-      console.log('speaking', userId);
       const user = await interaction.client.users.fetch(userId);
       await createListeningStream(connection, receiver, player, user);
     });

@@ -40,23 +40,29 @@ export async function createListeningStream(
   const stt = deepgram.listen.live({
     smart_format: true,
     filler_words: true,
-    interim_results: true,
+    // interim_results: true,
+    vad_events: true,
+    sample_rate: 48_000,
+    punctuate: true,
     model: 'nova-3',
     language: 'en-US',
   });
 
   stt.on(LiveTranscriptionEvents.Open, () => {
     stt.on(LiveTranscriptionEvents.Close, () => {
-      console.log("Connection closed.");
+      logger.debug('[Deepgram] Connection closed.');
     });
     stt.on(LiveTranscriptionEvents.Transcript, (data) => {
-      console.log(data.channel.alternatives[0].transcript);
+      const transcript = data.channel.alternatives[0].transcript
+      if (data.speech_final && transcript.trim().length > 0) {
+        logger.info({ transcript }, `[Deepgram] Transcript`);
+      }
     });
     stt.on(LiveTranscriptionEvents.Metadata, (data) => {
-      console.log(data);
+      logger.debug({ data }, `[Deepgram] Metadata`);
     });
-    stt.on(LiveTranscriptionEvents.Error, (err) => {
-      console.error(err);
+    stt.on(LiveTranscriptionEvents.Error, (error) => {
+      logger.error({ error }, `[Deepgram] Error`);
     });
 
     opusStream.pipe(oggStream);
@@ -64,9 +70,10 @@ export async function createListeningStream(
       let chunk;
       while (null !== (chunk = oggStream.read())) stt.send(chunk);
     });
-  
+
     opusStream.on('end', () => {
       stt.requestClose();
+      logger.info('Opus stream ended, closing STT connection.');
     });
   });
 }
