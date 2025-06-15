@@ -22,6 +22,7 @@
     "@ai-sdk/openai": "^2.0.0-alpha.12",
     "@ai-sdk/openai-compatible": "^1.0.0-alpha.12",
     "@date-fns/tz": "^1.2.0",
+    "@deepgram/sdk": "^4.4.0",
     "@discordjs/opus": "^0.10.0",
     "@discordjs/voice": "^0.18.0",
     "@elevenlabs/elevenlabs-js": "^2.2.0",

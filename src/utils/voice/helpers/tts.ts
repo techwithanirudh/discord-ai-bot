@@ -1,36 +1,43 @@
-import { AssemblyAI } from 'assemblyai';
-import { env } from '@/env';
-import logger from '@/lib/logger';
+import { Client, User } from "discord.js";
+import { joinVoiceChannel, getVoiceConnection, VoiceReceiver, EndBehaviorType } from "@discordjs/voice";
+import * as prism from "prism-media";
+import { createClient, LiveTranscriptionEvents } from "@deepgram/sdk";
 
-const client = new AssemblyAI({ apiKey: env.ASSEMBLYAI_API_KEY });
+const deepgram = createClient(process.env.DEEPGRAM_KEY);
 
-export async function transcribeStream(
-  stream: NodeJS.ReadableStream,
-): Promise<string> {
-  const transcriber = client.streaming.transcriber({
-    sampleRate: 48000,
-    formatTurns: true,
-  });
-  const parts: string[] = [];
-
-  // Optional: Log session if you want
-  // transcriber.on('open', ({ sessionId }) => logger.info(`AssemblyAI session: ${sessionId}`));
-  transcriber.on('turn', (turn) => {
-    if (!turn.transcript) return;
-
-    logger.info(turn)
-    parts.push(turn.transcript);
+export async function transcribeStream(receiver: VoiceReceiver, user: User, onTranscript: (text: string) => void) {
+  // Start Deepgram live connection
+  const sttConn = deepgram.listen.live({
+    smart_format: true,
+    filler_words: true,
+    interim_results: true,
+    model: "nova-2",
+    language: "en-US",
   });
 
-  transcriber.on('error', (error) =>
-    logger.error({ error }, 'AssemblyAI error'),
-  );
-
-  return new Promise(async (resolve, reject) => {
-    transcriber.on('close', () => resolve(parts.join(' ')));
-    await transcriber.connect();
-    stream.on('data', (chunk) => transcriber.sendAudio(chunk));
-    stream.on('end', () => transcriber.close());
-    stream.on('error', reject);
+  sttConn.on(LiveTranscriptionEvents.Transcript, (data) => {
+    const text = data.channel.alternatives[0].transcript;
+    if (data.speech_final && text.trim().length) {
+      onTranscript(text);
+    }
   });
+
+  // Pipe Discord Opus audio to Deepgram
+  const opusStream = receiver.subscribe(user.id, {
+    end: { behavior: EndBehaviorType.AfterSilence, duration: 200 },
+  });
+  const oggStream = new prism.opus.OggLogicalBitstream({
+    opusHead: new prism.opus.OpusHead({ channelCount: 1, sampleRate: 48000 }),
+    pageSizeControl: { maxPackets: 10 },
+  });
+
+  oggStream.on("readable", () => {
+    let chunk;
+    while (null !== (chunk = oggStream.read())) sttConn.send(chunk);
+  });
+
+  opusStream.pipe(oggStream);
+
+  // Return the connection to manage lifecycle if needed
+  return sttConn;
 }
