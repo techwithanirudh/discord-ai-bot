@@ -15,7 +15,8 @@
     "dev": "bun run --watch src/index.ts",
     "start": "bun run src/index.ts",
     "format": "prettier --write \"**/*.{json,ts}\"",
-    "lint": "eslint . --ext ts --fix"
+    "lint": "eslint . --ext ts --fix",
+    "deploy": "bun run src/deploy-commands.ts"
   },
   "dependencies": {
     "@ai-sdk/google": "^2.0.0-alpha.12",
@@ -44,6 +45,7 @@
     "pino": "^9.6.0",
     "pino-pretty": "^13.0.0",
     "prism-media": "^2.0.0-alpha.0",
+    "ws": "^8.18.2",
     "zod": "^3.25.63"
   },
   "devDependencies": {
