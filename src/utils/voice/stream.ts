@@ -61,11 +61,12 @@ export async function createListeningStream(
       if (data.speech_final) {
         logger.info({ transcript }, `[Deepgram] Transcript`);
         const text = await getAIResponse(transcript);
+        logger.info({ text }, `[Deepgram] AI Response`);
         const response = await deepgram.speak.request({ text }, { model: "aura-arcas-en" });
         const stream = await response.getStream();
-        // const stream = discordTTS.getVoiceStream(text);
-        const resource = createAudioResource(stream, { inlineVolume: false });
-        player.play(resource);      
+        if (!stream) return;
+        // @ts-expect-error this is a ReadableStream
+        playAudio(player, stream)
       }
     });
 

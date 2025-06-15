@@ -18,7 +18,8 @@ export async function playAudio(player: AudioPlayer, audio: string | Readable) {
    * will leave this as arbitrary.
    */
   const resource = createAudioResource(audio, {
-    inputType: StreamType.Arbitrary,
+    // inputType: StreamType.Arbitrary,
+    inlineVolume: false
   });
 
   /**
