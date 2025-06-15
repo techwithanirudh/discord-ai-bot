@@ -41,17 +41,16 @@ export async function createListeningStream(
   const stt = deepgram.listen.live({
     smart_format: true,
     filler_words: true,
-    interim_results: true,
+    // interim_results: true,
     vad_events: true,
     // sample_rate: 48_000,
-    punctuate: true,
     model: 'nova-3',
     language: 'en-US',
   });
 
   stt.on(LiveTranscriptionEvents.Open, () => {
     stt.on(LiveTranscriptionEvents.Close, () => {
-      logger.debug('[Deepgram] Connection closed.');
+      logger.info('[Deepgram] Connection closed.');
     });
 
     stt.on(LiveTranscriptionEvents.Transcript, async (data) => {
@@ -86,7 +85,6 @@ export async function createListeningStream(
 
     opusStream.on('end', () => {
       stt.requestClose();
-      logger.info('Opus stream ended, closing STT connection.');
     });
   });
 }
