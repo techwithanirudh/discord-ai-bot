@@ -6,10 +6,10 @@ export const city = 'Athens';
 export const timezone = 'Europe/Athens';
 
 export const speed = {
-  minDelay: 1,
-  maxDelay: 1,
+  minDelay: 5,
+  maxDelay: 15,
   speedMethod: 'divide',
-  speedFactor: 6000000000,
+  speedFactor: 60,
 };
 
 export const statuses = ['online', 'idle', 'dnd', 'offline'];

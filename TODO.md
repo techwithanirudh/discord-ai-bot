@@ -14,3 +14,4 @@ seperate deepgram code into its seperate files
 probably switch to 11 labs
 Implement memory for the ai voic chat
 Add commit lint
+Allow people to customize zenix's speed in config
