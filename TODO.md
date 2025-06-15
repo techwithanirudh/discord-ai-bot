@@ -11,5 +11,6 @@ Put commands like join and leave as a subcommand under VC, make an easierway to 
 Stream back audio from ElevenLabs instead of non streaming
 Switch to AI SDK Voice leater
 
-seperate deepgram code into its seperate fukes
+seperate deepgram code into its seperate files
 probably switch to 11 labs
+Implement memory for the ai
