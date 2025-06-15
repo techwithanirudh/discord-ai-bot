@@ -50,7 +50,6 @@ export async function execute(
       const user = await interaction.client.users.fetch(userId);
       await createListeningStream(receiver, player, user);
     });
-
   } catch (error) {
     console.warn(error);
 

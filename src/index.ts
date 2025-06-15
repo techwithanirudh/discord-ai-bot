@@ -44,7 +44,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
   }
   const { commandName } = interaction;
   if (commands[commandName as keyof typeof commands]) {
-    // how do we pass player to commands?
+    // @ts-expect-error todo: fix this
     commands[commandName as keyof typeof commands].execute(interaction);
   }
 });

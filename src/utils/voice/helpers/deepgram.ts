@@ -9,11 +9,14 @@ type SpeakProps = {
 };
 
 export async function speak({ text, model }: SpeakProps) {
-  const response = await deepgram.speak.request({
-    text
-  }, {
-    model: model,
-  });
+  const response = await deepgram.speak.request(
+    {
+      text,
+    },
+    {
+      model: model,
+    },
+  );
 
   const stream = await response.getStream();
   return stream;

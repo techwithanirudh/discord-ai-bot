@@ -5,18 +5,18 @@ import * as leave from './leave';
 export const data = new SlashCommandBuilder()
   .setName('vc')
   .setDescription('Voice channel commands')
-  .addSubcommand(subcommand => 
+  .addSubcommand((subcommand) =>
     subcommand
       .setName('join')
-      .setDescription('Joins the voice channel that you are in')
+      .setDescription('Joins the voice channel that you are in'),
   )
-  .addSubcommand(subcommand => 
-    subcommand
-      .setName('leave')
-      .setDescription('Leave the voice channel')
+  .addSubcommand((subcommand) =>
+    subcommand.setName('leave').setDescription('Leave the voice channel'),
   );
 
-export async function execute(interaction: ChatInputCommandInteraction<'cached'>) {
+export async function execute(
+  interaction: ChatInputCommandInteraction<'cached'>,
+) {
   const subcommand = interaction.options.getSubcommand();
 
   switch (subcommand) {

@@ -19,7 +19,7 @@ export async function playAudio(player: AudioPlayer, audio: string | Readable) {
    */
   const resource = createAudioResource(audio, {
     // inputType: StreamType.Arbitrary,
-    inlineVolume: false
+    inlineVolume: false,
   });
 
   /**
