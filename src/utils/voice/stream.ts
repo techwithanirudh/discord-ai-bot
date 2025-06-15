@@ -23,7 +23,7 @@ export async function createListeningStream(
 
   const stream = opusStream.pipe(new prism.opus.Decoder({
     frameSize: 960,
-    channels: 2,
+    channels: 1,
     rate: 48000,
   }));
 
