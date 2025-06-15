@@ -18,7 +18,7 @@ export async function execute(
 
   if (!connection) {
     await interaction.reply({
-      content: 'wdym? i\'m not in a voice channel',
+      content: "wdym? i'm not in a voice channel",
       ephemeral: true,
     });
 

@@ -23,9 +23,7 @@ export async function execute(
 
   if (!connection) {
     if (!interaction.member?.voice.channel) {
-      await interaction.followUp(
-        'okay, but you\'re not in vc'
-      );
+      await interaction.followUp("okay, but you're not in vc");
 
       return;
     }
@@ -54,7 +52,7 @@ export async function execute(
     console.warn(error);
 
     await interaction.followUp(
-      'oops, idk what happened. I couldn\'t join the voice channel.'
+      "oops, idk what happened. I couldn't join the voice channel.",
     );
   }
 
