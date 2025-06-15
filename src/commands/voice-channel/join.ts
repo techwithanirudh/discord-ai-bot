@@ -8,6 +8,7 @@ import {
 } from '@discordjs/voice';
 import type { ChatInputCommandInteraction, Snowflake } from 'discord.js';
 import { createListeningStream } from '@/utils/voice/stream';
+import { playAudio } from '@/utils/voice/helpers';
 
 export const data = new SlashCommandBuilder()
   .setName('join')
@@ -34,7 +35,7 @@ export async function execute(
       channelId: interaction.member.voice.channel.id,
       guildId: interaction.guild.id,
       selfDeaf: false,
-      selfMute: true,
+      selfMute: false,
     });
   }
 
@@ -45,7 +46,14 @@ export async function execute(
     const player = createAudioPlayer();
     connection.subscribe(player);
 
-    await createListeningStream(connection, receiver, player, interaction);
+    await playAudio(player, 'https://file-examples.com/storage/feb81a754e684c18da2d7c7/2017/11/file_example_MP3_700KB.mp3')
+
+    receiver.speaking.on('start', async (userId) => {
+      console.log('speaking', userId);
+      const user = await interaction.client.users.fetch(userId);
+      await createListeningStream(connection, receiver, player, user);
+    });
+
   } catch (error) {
     console.warn(error);
 
