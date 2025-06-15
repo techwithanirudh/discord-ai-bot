@@ -24,7 +24,7 @@ export async function execute(
   if (!connection) {
     if (!interaction.member?.voice.channel) {
       await interaction.followUp(
-        'Join a voice channel and then try that again!',
+        'okay, but you\'re not in vc'
       );
 
       return;
@@ -54,9 +54,9 @@ export async function execute(
     console.warn(error);
 
     await interaction.followUp(
-      'Failed to join voice channel within 20 seconds, please try again later!',
+      'oops, idk what happened. I couldn\'t join the voice channel.'
     );
   }
 
-  await interaction.followUp('Ready!');
+  await interaction.followUp('thanks for inviting me! joined');
 }

@@ -18,7 +18,7 @@ export async function execute(
 
   if (!connection) {
     await interaction.reply({
-      content: 'Not in a voice channel in this server!',
+      content: 'wdym? i\'m not in a voice channel',
       ephemeral: true,
     });
 
@@ -27,5 +27,5 @@ export async function execute(
 
   connection.destroy();
 
-  await interaction.reply({ content: 'Left the channel!', ephemeral: true });
+  await interaction.reply({ content: 'okay byeee!', ephemeral: true });
 }
