@@ -160,17 +160,15 @@ export const artifactsPrompt = `\
 export const systemPrompt = ({
   selectedChatModel,
   requestHints,
-  memories,
 }: {
   selectedChatModel: string;
   requestHints: RequestHints;
-  memories: string;
 }) => {
   const requestPrompt = getRequestPromptFromHints(requestHints);
 
   if (selectedChatModel === 'chat-model') {
-    return `${regularPrompt}\n\n${requestPrompt}\n\n${toolsPrompt}\n\n<CONTEXT>${memories}</CONTEXT>`;
+    return `${regularPrompt}\n\n${requestPrompt}\n\n${toolsPrompt}`;
   } else if (selectedChatModel === 'relevance-model') {
-    return `${regularPrompt}\n\n${requestPrompt}\n\n${artifactsPrompt}\n\n<CONTEXT>${memories}</CONTEXT>`;
+    return `${regularPrompt}\n\n${requestPrompt}\n\n${artifactsPrompt}`;
   }
 };

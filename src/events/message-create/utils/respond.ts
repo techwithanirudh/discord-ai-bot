@@ -13,7 +13,6 @@ export async function generateResponse(
   msg: MinimalContext,
   messages: ModelMessage[],
   hints: RequestHints,
-  memories: string,
   options?: {
     memories?: boolean;
     tools?: {
@@ -30,7 +29,6 @@ export async function generateResponse(
     const system = systemPrompt({
       selectedChatModel: 'chat-model',
       requestHints: hints,
-      memories,
     });
 
     const { text } = await generateText({
@@ -57,19 +55,6 @@ export async function generateResponse(
       system,
       stopWhen: stepCountIs(10),
     });
-
-    if (options?.memories) {
-      await addMemories(
-        [
-          ...messages,
-          {
-            role: 'assistant',
-            content: text,
-          },
-        ],
-        { user_id: msg.author.id },
-      );
-    }
 
     return { success: true, response: text };
   } catch (e) {
