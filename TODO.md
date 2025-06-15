@@ -10,3 +10,6 @@ mention that u need to install rust curl --proto '=https' --tlsv1.2 -sSf https:/
 Put commands like join and leave as a subcommand under VC, make an easierway to have subcommands rather clubbing in one file
 Stream back audio from ElevenLabs instead of non streaming
 Switch to AI SDK Voice leater
+
+seperate deepgram code into its seperate fukes
+probably switch to 11 labs
