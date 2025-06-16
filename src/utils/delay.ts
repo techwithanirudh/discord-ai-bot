@@ -2,35 +2,17 @@ import { speed as speedConfig } from '@/config';
 import { sentences, normalize } from './tokenize-messages';
 import { DMChannel, Message, TextChannel, ThreadChannel } from 'discord.js';
 import logger from '@/lib/logger';
+import state, { getUserWpm } from '@/utils/global-state';
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-function calculateDelay(text: string): number {
-  const { speedMethod, speedFactor } = speedConfig;
-
-  const length = text.length;
-  const baseSeconds = (() => {
-    switch (speedMethod) {
-      case 'multiply':
-        return length * speedFactor;
-      case 'add':
-        return length + speedFactor;
-      case 'divide':
-        return length / speedFactor;
-      case 'subtract':
-        return length - speedFactor;
-      default:
-        return length;
-    }
-  })();
-
-  const punctuationCount = text
-    .split(' ')
-    .filter((w) => /[.!?]$/.test(w)).length;
-  const extraMs = punctuationCount * 500;
-
-  const totalMs = baseSeconds * 1000 + extraMs;
-  return Math.max(totalMs, 100);
+function calculateDelay(text: string, userId?: string): number {
+  const baseWpm = state.speed.baseWpm;
+  const userWpm = userId ? getUserWpm(userId) : baseWpm;
+  const wpm = (baseWpm + userWpm) / 2;
+  const words = text.split(/\s+/).filter(Boolean).length;
+  const ms = (words / wpm) * 60 * 1000;
+  return Math.min(ms, 14000);
 }
 
 export async function reply(message: Message, reply: string): Promise<void> {
@@ -48,6 +30,11 @@ export async function reply(message: Message, reply: string): Promise<void> {
   const segments = normalize(sentences(reply));
   let isFirst = true;
 
+  while (state.isTyping) {
+    await sleep(500);
+  }
+  state.isTyping = true;
+
   for (const raw of segments) {
     const text = raw.toLowerCase().trim().replace(/\.$/, '');
     if (!text) continue;
@@ -58,7 +45,7 @@ export async function reply(message: Message, reply: string): Promise<void> {
 
     try {
       await channel.sendTyping();
-      await sleep(calculateDelay(text));
+      await sleep(calculateDelay(text, message.author.id));
 
       if (isFirst && Math.random() < 0.5) {
         await message.reply(text);
@@ -71,4 +58,5 @@ export async function reply(message: Message, reply: string): Promise<void> {
       break;
     }
   }
+  state.isTyping = false;
 }

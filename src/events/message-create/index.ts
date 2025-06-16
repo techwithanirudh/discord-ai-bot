@@ -14,6 +14,7 @@ import { reply as staggeredReply } from '@/utils/delay';
 import { getTrigger } from '@/utils/triggers';
 import { logTrigger, logIncoming, logReply } from '@/utils/log';
 import logger from '@/lib/logger';
+import { updateUserTyping } from '@/utils/global-state';
 
 export const name = Events.MessageCreate;
 export const once = false;
@@ -54,6 +55,7 @@ export async function execute(message: Message) {
   const ctxId = isDM ? `dm:${author.id}` : guild.id;
 
   logIncoming(ctxId, author.username, content);
+  updateUserTyping(author.id, content);
 
   if (!(await canReply(ctxId))) return;
 
