@@ -1,74 +1,40 @@
 import { speed as speedConfig } from '@/config';
-import logger from '@/lib/logger';
-import { DMChannel, Message, TextChannel, ThreadChannel } from 'discord.js';
-import { normalize, sentences } from './tokenize-messages';
 
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
-function calculateDelay(text: string): number {
-  const { speedMethod, speedFactor } = speedConfig;
-
-  const length = text.length;
-  const baseSeconds = (() => {
-    switch (speedMethod) {
-      case 'multiply':
-        return length * speedFactor;
-      case 'add':
-        return length + speedFactor;
-      case 'divide':
-        return length / speedFactor;
-      case 'subtract':
-        return length - speedFactor;
-      default:
-        return length;
-    }
-  })();
-
-  const punctuationCount = text
-    .split(' ')
-    .filter((w) => /[.!?]$/.test(w)).length;
-  const extraMs = punctuationCount * 500;
-
-  const totalMs = baseSeconds * 1000 + extraMs;
-  return Math.max(totalMs, 100);
+export function msPerChar(wpm: number): number {
+  const charsPerMinute = wpm * 5;
+  const msPerMinute = 60_000;
+  return msPerMinute / charsPerMinute;
 }
 
-export async function reply(message: Message, reply: string): Promise<void> {
-  const channel = message.channel;
-  if (
-    !(
-      channel instanceof TextChannel ||
-      channel instanceof ThreadChannel ||
-      channel instanceof DMChannel
-    )
-  ) {
-    return;
-  }
+export function jitteredWpm(
+  baseWpm: number = speedConfig.baseWpm,
+  stddev: number = speedConfig.jitterStddev
+): number {
+  // uniform jitter in [-stddev, +stddev]
+  return baseWpm + (Math.random() * 2 - 1) * stddev;
+}
 
-  const segments = normalize(sentences(reply));
-  let isFirst = true;
+export interface ComputeDelayOptions {
+  baseWpm?: number;
+  jitterStddev?: number;
+  minMs?: number;
+  maxMs?: number;
+}
 
-  for (const raw of segments) {
-    const text = raw.toLowerCase().trim().replace(/\.$/, '');
-    if (!text) continue;
+export function computeDelay(
+  text: string,
+  speedMultiplier: number = 1.0,
+  opts: ComputeDelayOptions = {}
+): number {
+  const {
+    baseWpm = speedConfig.baseWpm,
+    jitterStddev = speedConfig.jitterStddev,
+    minMs = speedConfig.minMs,
+    maxMs = speedConfig.maxMs,
+  } = opts;
 
-    const { minDelay, maxDelay } = speedConfig;
-    const pauseMs = (Math.random() * (maxDelay - minDelay) + minDelay) * 1000;
-    await sleep(pauseMs);
-
-    try {
-      await channel.sendTyping();
-      await sleep(calculateDelay(text));
-
-      if (isFirst && Math.random() < 0.5) {
-        await message.reply(text);
-        isFirst = false;
-      } else {
-        await channel.send(text);
-      }
-    } catch (error) {
-      logger.error({ error }, 'Error sending message');
-      break;
-    }
-  }
+  const wpm = jitteredWpm(baseWpm, jitterStddev);
+  let delay = text.length * msPerChar(wpm);
+  delay *= speedMultiplier;
+  return Math.max(minMs, Math.min(maxMs, delay));
 }

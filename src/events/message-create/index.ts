@@ -1,7 +1,7 @@
 import { keywords } from '@/config';
 import { ratelimit, redis, redisKeys } from '@/lib/kv';
 import { buildChatContext } from '@/utils/context';
-import { reply as staggeredReply } from '@/utils/delay';
+import { reply as staggeredReply } from '@/utils/reply';
 import {
   clearUnprompted,
   getUnprompted,
