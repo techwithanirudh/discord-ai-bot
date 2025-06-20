@@ -37,7 +37,7 @@ export async function runInSandbox({
     const result = await Promise.race([
       runner(...values),
       new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Execution timed out')), timeoutMs),
+        setTimeout(() => reject(new Error('Execution timed out')), timeoutMs)
       ),
     ]);
     return { ok: true, result };

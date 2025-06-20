@@ -21,7 +21,7 @@ export const report = ({ message }: { message: MinimalContext }) =>
           },
           reason: reason,
         },
-        'Message was reported',
+        'Message was reported'
       );
 
       return {

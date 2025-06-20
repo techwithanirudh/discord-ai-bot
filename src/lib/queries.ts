@@ -18,7 +18,7 @@ export async function getMessagesByChannel({
   try {
     const messages = await channel.messages.fetch({ limit: limit ?? 100 });
     const sorted = messages.sort(
-      (a, b) => a.createdTimestamp - b.createdTimestamp,
+      (a, b) => a.createdTimestamp - b.createdTimestamp
     );
     return sorted;
   } catch (error) {

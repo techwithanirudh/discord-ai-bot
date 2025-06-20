@@ -8,7 +8,7 @@ export async function assessRelevance(
   msg: Message,
   messages: ModelMessage[],
   hints: RequestHints,
-  memories: string,
+  memories: string
 ): Promise<Probability> {
   try {
     const { object } = await generateObject({

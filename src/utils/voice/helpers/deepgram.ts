@@ -15,7 +15,7 @@ export async function speak({ text, model }: SpeakProps) {
     },
     {
       model: model,
-    },
+    }
   );
 
   const stream = await response.getStream();

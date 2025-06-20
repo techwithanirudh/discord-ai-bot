@@ -13,7 +13,7 @@ export type MinimalContext = Pick<
 >;
 
 export async function convertToModelMessages(
-  messages: Collection<string, DiscordMessage<boolean>>,
+  messages: Collection<string, DiscordMessage<boolean>>
 ): Promise<Array<ModelMessage>> {
   return await Promise.all(
     messages.map(async (message) => ({
@@ -28,23 +28,23 @@ export async function convertToModelMessages(
         ...(await processAttachments(message.attachments)),
       ],
       createdAt: message.createdAt,
-    })),
+    }))
   );
 }
 
 export async function processAttachments(
-  attachments: Collection<string, DiscordAttachment>,
+  attachments: Collection<string, DiscordAttachment>
 ): Promise<Array<FilePart>> {
   const validTypes = ['image/jpeg', 'image/png', 'application/pdf'];
   const invalidAttachments = attachments.filter(
-    (attachment) => !validTypes.includes(attachment.contentType ?? ''),
+    (attachment) => !validTypes.includes(attachment.contentType ?? '')
   );
 
   if (invalidAttachments.size > 0) {
     logger.warn(
       `Ignoring attachments: ${Array.from(invalidAttachments.values())
         .map((a) => a.name)
-        .join(', ')}`,
+        .join(', ')}`
     );
   }
 
@@ -58,7 +58,7 @@ export async function processAttachments(
         mediaType: attachment.contentType ?? 'application/octet-stream',
         filename: attachment.name,
       };
-    }),
+    })
   );
 
   return results;

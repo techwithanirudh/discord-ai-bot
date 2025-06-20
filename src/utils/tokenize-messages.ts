@@ -12,6 +12,6 @@ export function normalize(input: string[]): string[] {
     s
       .replace(/\b\w+(?:\s*\([^)]+\))*:\s*/g, '')
       .replace(/[.!?]+$/g, '')
-      .trim(),
+      .trim()
   );
 }

@@ -32,7 +32,7 @@ async function isChannelAllowed(message: Message): Promise<boolean> {
   const guildId = message.guild.id;
   const channelId = message.channel.id;
   const allowedChannels = await redis.smembers(
-    redisKeys.allowedChannels(guildId),
+    redisKeys.allowedChannels(guildId)
   );
 
   if (!allowedChannels || allowedChannels.length === 0) {
@@ -86,7 +86,7 @@ export async function execute(message: Message) {
     message,
     messages,
     hints,
-    memories,
+    memories
   );
   logger.info({ reason, probability }, `[${ctxId}] Relevance check`);
 

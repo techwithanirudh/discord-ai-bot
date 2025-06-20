@@ -11,7 +11,7 @@ export const searchWeb = tool({
       .string()
       .nullable()
       .describe(
-        'a domain to search if the user specifies e.g. bbc.com. Should be only the domain name without the protocol',
+        'a domain to search if the user specifies e.g. bbc.com. Should be only the domain name without the protocol'
       ),
   }),
   execute: async ({ query, specificDomain }) => {

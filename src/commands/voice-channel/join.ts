@@ -13,7 +13,7 @@ import type { ChatInputCommandInteraction } from 'discord.js';
 //   .setDescription('Joins the voice channel that you are in');
 
 export async function execute(
-  interaction: ChatInputCommandInteraction<'cached'>,
+  interaction: ChatInputCommandInteraction<'cached'>
 ) {
   await interaction.deferReply();
 
@@ -50,7 +50,7 @@ export async function execute(
     console.warn(error);
 
     await interaction.followUp(
-      "oops, idk what happened. I couldn't join the voice channel.",
+      "oops, idk what happened. I couldn't join the voice channel."
     );
   }
 

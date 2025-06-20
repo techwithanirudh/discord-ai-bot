@@ -18,7 +18,7 @@ export const getRequestPromptFromHints = (requestHints: RequestHints) => `\
   requestHints.channel
 } channel.
   You joined the server on ${new Date(
-    requestHints.joined,
+    requestHints.joined
   ).toLocaleDateString()}.
   Your current status is ${requestHints.status} and your activity is ${
   requestHints.activity

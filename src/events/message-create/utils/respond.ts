@@ -23,7 +23,7 @@ export async function generateResponse(
       discord?: boolean;
       [key: string]: boolean | undefined;
     };
-  },
+  }
 ): Promise<{ success: boolean; response?: string; error?: string }> {
   try {
     const isMessage = isDiscordMessage(msg);
@@ -72,7 +72,7 @@ export async function generateResponse(
             content: text,
           },
         ],
-        { user_id: msg.author.id },
+        { user_id: msg.author.id }
       );
     }
 

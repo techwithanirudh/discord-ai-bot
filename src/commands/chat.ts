@@ -14,11 +14,11 @@ export const data = new SlashCommandBuilder()
     opt
       .setName('prompt')
       .setDescription('What do you want to say?')
-      .setRequired(true),
+      .setRequired(true)
   );
 
 export async function execute(
-  interaction: ChatInputCommandInteraction<'cached'>,
+  interaction: ChatInputCommandInteraction<'cached'>
 ) {
   await interaction.deferReply();
 

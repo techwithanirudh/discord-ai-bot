@@ -12,7 +12,7 @@ export async function buildChatContext(
     messages?: ModelMessage[];
     hints?: RequestHints;
     memories?: string;
-  },
+  }
 ) {
   let messages = opts?.messages;
   let hints = opts?.hints;
