@@ -21,8 +21,8 @@ export const data = new SlashCommandBuilder()
           .setName('channel')
           .setDescription('The text channel to add')
           .addChannelTypes(ChannelType.GuildText)
-          .setRequired(true),
-      ),
+          .setRequired(true)
+      )
   )
   .addSubcommand((sc) =>
     sc
@@ -33,14 +33,14 @@ export const data = new SlashCommandBuilder()
           .setName('channel')
           .setDescription('The text channel to remove')
           .addChannelTypes(ChannelType.GuildText)
-          .setRequired(true),
-      ),
+          .setRequired(true)
+      )
   )
   .addSubcommand((sc) =>
-    sc.setName('list').setDescription('List all allowed channels'),
+    sc.setName('list').setDescription('List all allowed channels')
   )
   .addSubcommand((sc) =>
-    sc.setName('clear').setDescription('Clear all allowed channels'),
+    sc.setName('clear').setDescription('Clear all allowed channels')
   );
 
 export async function execute(interaction: ChatInputCommandInteraction) {

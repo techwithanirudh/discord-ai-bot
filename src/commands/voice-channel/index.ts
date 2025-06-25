@@ -8,14 +8,14 @@ export const data = new SlashCommandBuilder()
   .addSubcommand((subcommand) =>
     subcommand
       .setName('join')
-      .setDescription('Joins the voice channel that you are in'),
+      .setDescription('Joins the voice channel that you are in')
   )
   .addSubcommand((subcommand) =>
-    subcommand.setName('leave').setDescription('Leave the voice channel'),
+    subcommand.setName('leave').setDescription('Leave the voice channel')
   );
 
 export async function execute(
-  interaction: ChatInputCommandInteraction<'cached'>,
+  interaction: ChatInputCommandInteraction<'cached'>
 ) {
   const subcommand = interaction.options.getSubcommand();
 

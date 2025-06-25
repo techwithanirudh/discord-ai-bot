@@ -13,7 +13,7 @@ import { deepgram, getAIResponse, playAudio, speak } from './helpers';
 export async function createListeningStream(
   receiver: VoiceReceiver,
   player: AudioPlayer,
-  user: User,
+  user: User
 ) {
   const opusStream = receiver.subscribe(user.id, {
     end: {

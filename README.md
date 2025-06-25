@@ -17,7 +17,6 @@ This project was developed with the following technologies:
 
 - [Vercel AI SDK][ai-sdk]
 - [Exa AI][exa]
-- [Mem0][mem0]
 - [discord.js][discord.js]
 - [TypeScript][ts]
 - [Bun][bun]
@@ -48,7 +47,7 @@ $ bun run dev
 
 ## <a name="license">📝 License</a>
 
-This project is under the AGPL-v3 license. See the [LICENSE](LICENSE) for details.
+This project is under the MIT license. See the [LICENSE](LICENSE) for details.
 
 > Credit to Fellipe Utaka for the [Discord Bot Template](https://github.com/fellipeutaka/discord-bot-template)
 
@@ -61,5 +60,4 @@ This project is under the AGPL-v3 license. See the [LICENSE](LICENSE) for detail
 [prettier]: https://prettier.io/
 [ai-sdk]: https://ai-sdk.dev/
 [bun]: https://bun.sh/
-[mem0]: https://mem0.ai/
 [exa]: https://exa.ai/

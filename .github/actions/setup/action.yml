@@ -36,7 +36,6 @@ runs:
         UPSTASH_REDIS_REST_TOKEN=your_upstash_redis_rest_token
         LOG_LEVEL=INFO
         LOG_DIRECTORY=logs
-        MEM0_API_KEY=m0-api_key_here
         DEEPGRAM_API_KEY=your_deepgram_api_key_here
         ELEVENLABS_API_KEY=your_elevenlabs_api_key_here
         EXA_API_KEY=your_exa_api_key_here

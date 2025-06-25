@@ -13,7 +13,7 @@ export type MinimalContext = Pick<
 >;
 
 export async function convertToModelMessages(
-  messages: Collection<string, DiscordMessage<boolean>>,
+  messages: Collection<string, DiscordMessage<boolean>>
 ): Promise<Array<ModelMessage>> {
   return await Promise.all(
     messages.map(async (message) => ({
@@ -28,40 +28,50 @@ export async function convertToModelMessages(
         ...(await processAttachments(message.attachments)),
       ],
       createdAt: message.createdAt,
-    })),
+    }))
   );
 }
 
 export async function processAttachments(
-  attachments: Collection<string, DiscordAttachment>,
-): Promise<Array<FilePart>> {
+  attachments: Collection<string, DiscordAttachment>
+): Promise<FilePart[]> {
   const validTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+
+  const validAttachments = attachments.filter((a) =>
+    validTypes.includes(a.contentType ?? '')
+  );
+
   const invalidAttachments = attachments.filter(
-    (attachment) => !validTypes.includes(attachment.contentType ?? ''),
+    (a) => !validTypes.includes(a.contentType ?? '')
   );
 
   if (invalidAttachments.size > 0) {
     logger.warn(
-      `Ignoring attachments: ${Array.from(invalidAttachments.values())
+      `Ignored attachments: ${Array.from(invalidAttachments.values())
         .map((a) => a.name)
-        .join(', ')}`,
+        .join(', ')}`
     );
   }
 
-  const results = await Promise.all(
-    attachments.map(async (attachment) => {
-      const response = await fetch(attachment.url);
-      const buffer = await response.arrayBuffer();
-      return {
-        type: 'file' as const,
+  const results: FilePart[] = [];
+
+  for (const attachment of validAttachments.values()) {
+    try {
+      const res = await fetch(attachment.url);
+      const buffer = await res.arrayBuffer();
+
+      results.push({
+        type: 'file',
         data: buffer,
         mediaType: attachment.contentType ?? 'application/octet-stream',
         filename: attachment.name,
-      };
-    }),
-  );
+      });
+    } catch (err) {
+      logger.warn(`Failed to fetch attachment ${attachment.name}:`, err);
+    }
+  }
 
-  return results;
+  return [];
 }
 
 export function isDiscordMessage(msg: unknown): msg is Message {

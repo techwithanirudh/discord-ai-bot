@@ -8,7 +8,6 @@ export async function assessRelevance(
   msg: Message,
   messages: ModelMessage[],
   hints: RequestHints,
-  memories: string,
 ): Promise<Probability> {
   try {
     const { object } = await generateObject({
@@ -18,7 +17,6 @@ export async function assessRelevance(
       system: systemPrompt({
         selectedChatModel: 'relevance-model',
         requestHints: hints,
-        memories,
       }),
       mode: 'json',
     });

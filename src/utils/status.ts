@@ -29,7 +29,7 @@ const updateStatus = (client: Client): void => {
 
 const beginStatusUpdates = (
   client: Client,
-  intervalMs = 10 * 60 * 1000,
+  intervalMs = 10 * 60 * 1000
 ): void => {
   updateStatus(client);
   setInterval(() => updateStatus(client), intervalMs);

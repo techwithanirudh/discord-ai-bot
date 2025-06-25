@@ -35,7 +35,6 @@
     "@discordjs/opus": "^0.10.0",
     "@discordjs/voice": "^0.18.0",
     "@elevenlabs/elevenlabs-js": "^2.2.0",
-    "@mem0/vercel-ai-provider": "^1.0.3",
     "@openrouter/ai-sdk-provider": "^0.7.1",
     "@t3-oss/env-core": "^0.13.4",
     "@upstash/ratelimit": "^2.0.5",

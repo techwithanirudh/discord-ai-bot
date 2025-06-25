@@ -6,7 +6,7 @@ import type { ChatInputCommandInteraction } from 'discord.js';
 //   .setDescription('Leave the voice channel');
 
 export async function execute(
-  interaction: ChatInputCommandInteraction<'cached'>,
+  interaction: ChatInputCommandInteraction<'cached'>
 ) {
   const connection = getVoiceConnection(interaction.guildId);
 

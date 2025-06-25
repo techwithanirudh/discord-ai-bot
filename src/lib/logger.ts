@@ -36,5 +36,5 @@ export default pino(
     level: env.LOG_LEVEL || 'info',
     timestamp: pino.stdTimeFunctions.isoTime,
   },
-  transport,
+  transport
 );

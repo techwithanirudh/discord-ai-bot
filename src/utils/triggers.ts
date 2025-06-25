@@ -5,7 +5,7 @@ export type TriggerType = 'ping' | 'keyword' | 'dm' | null;
 export function getTrigger(
   message: Message,
   keywords: string[],
-  botId?: string,
+  botId?: string
 ): { type: TriggerType; info: string | string[] | null } {
   if (botId && message.mentions.users.has(botId)) {
     return {
@@ -15,7 +15,7 @@ export function getTrigger(
   }
   const content = message.content.toLowerCase();
   const matchedKeywords = keywords.filter((k) =>
-    content.includes(k.toLowerCase()),
+    content.includes(k.toLowerCase())
   );
   if (matchedKeywords.length > 0) {
     return { type: 'keyword', info: matchedKeywords };

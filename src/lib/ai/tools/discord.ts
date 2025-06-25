@@ -144,8 +144,9 @@ export const discord = ({ client, message, messages }: DiscordToolProps) =>
         success: false,
         answer: 'No answer provided',
       };
+      const state = JSON.stringify(sharedState.state, null, 2);
 
-      logger.info({ ...answer }, 'Agent completed');
+      logger.info({ ...answer, state }, 'Agent completed');
 
       await status.edit({
         embeds: [
@@ -161,6 +162,6 @@ export const discord = ({ client, message, messages }: DiscordToolProps) =>
         allowedMentions: { repliedUser: false },
       });
 
-      return { ...answer };
+      return { ...answer, state };
     },
   });
