@@ -6,7 +6,7 @@
 2. 🚀 [Tech Stack](#tech-stack)
 3. 📚 [Getting Started](#getting-started)
 4. 🧠 [Memory](#memory)
-4. 📝 [License](#license)
+5. 📝 [License](#license)
 
 ## <a name="introduction">🤖 Introduction</a>
 
@@ -55,6 +55,7 @@ Set the `PINECONE_API_KEY` environment variable to your Pinecone API key.
 Then, create a Pinecone index and set the `PINECONE_INDEX` environment variable to the name of your Pinecone index.
 
 Spec:
+
 - Pinecone index should be dense
 - Dimension: 1536
 - Metric: dotproduct

@@ -1,5 +1,6 @@
 import { systemPrompt } from '@/lib/ai/prompts';
 import { myProvider } from '@/lib/ai/providers';
+import logger from '@/lib/logger';
 import { probabilitySchema, type Probability } from '@/lib/validators';
 import type { RequestHints } from '@/types';
 import { generateObject, type ModelMessage } from 'ai';
@@ -22,7 +23,8 @@ export async function assessRelevance(
       mode: 'json',
     });
     return object;
-  } catch {
+  } catch (error) {
+    logger.error({ error }, 'Failed to assess relevance');
     return {
       probability: 0.5,
       reason: 'Oops! Something went wrong, please try again later',

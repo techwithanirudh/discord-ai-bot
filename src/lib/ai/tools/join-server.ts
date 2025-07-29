@@ -1,12 +1,12 @@
 import logger from '@/lib/logger';
-import type { MinimalContext } from '@/utils/messages';
 import { tool } from 'ai';
+import type { Message } from 'discord.js-selfbot-v13';
 import { z } from 'zod/v4';
 
-export const joinServer = ({ message }: { message: MinimalContext }) =>
+export const joinServer = ({ message }: { message: Message }) =>
   tool({
     description: 'Join a discord server.',
-    parameters: z.object({
+    inputSchema: z.object({
       reason: z
         .string()
         .describe('The reason why you want to join the server.'),

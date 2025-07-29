@@ -11,7 +11,7 @@ export const redis = new Redis({
 
 export const ratelimit = new Ratelimit({
   redis,
-  limiter: Ratelimit.slidingWindow(7, '30 s'),
+  limiter: Ratelimit.slidingWindow(30, '30 s'),
   analytics: true,
   prefix: PREFIX,
 });

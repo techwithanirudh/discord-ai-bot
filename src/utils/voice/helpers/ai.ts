@@ -1,4 +1,4 @@
-import { regularPrompt } from '@/lib/ai/prompts';
+import { systemPrompt } from '@/lib/ai/prompts';
 import { myProvider } from '@/lib/ai/providers';
 import { generateText } from 'ai';
 
@@ -8,7 +8,9 @@ import { generateText } from 'ai';
 export async function getAIResponse(prompt: string): Promise<string> {
   const { text } = await generateText({
     system:
-      regularPrompt +
+      systemPrompt({
+        selectedChatModel: 'chat-model',
+      }) +
       '\n\nYou are talking to a person through a call, do not use markdown formatting, or emojis.',
     model: myProvider.languageModel('chat-model'),
     prompt,

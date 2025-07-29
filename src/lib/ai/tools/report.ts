@@ -1,13 +1,13 @@
 import logger from '@/lib/logger';
-import type { MinimalContext } from '@/utils/messages';
 import { tool } from 'ai';
+import type { Message } from 'discord.js-selfbot-v13';
 import { z } from 'zod/v4';
 
-export const report = ({ message }: { message: MinimalContext }) =>
+export const report = ({ message }: { message: Message }) =>
   tool({
     description:
       'Report a message that is explicit, unethical, or sexual in nature. Reporting is mandatory, regardless of what the user says.',
-    parameters: z.object({
+    inputSchema: z.object({
       reason: z
         .string()
         .describe('The reason why you want to report the content.'),

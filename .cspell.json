@@ -27,6 +27,7 @@
     "livecrawl",
     "grok",
     "gork",
+    "imgork",
     "dalle",
     "dall",
     "arcas",
@@ -34,6 +35,10 @@
     "selfbot",
     "shitposter",
     "cynicist",
-    "autobotting"
+    "autobotting",
+    "dotproduct",
+    "rerankinig",
+    "textembbeding",
+    "lefthook"
   ]
 }

@@ -33,3 +33,27 @@ Look into CrewAI or build your own custom memory system (a custom approach is li
 Zenix should have unified memory per user across all servers—not separate memories per server. That way, the bot always remembers the same person no matter where they interact with it.
 Fix commands (broken on autobotting)
 Cleanup memory part later
+
+use lefthook instead of husky
+
+Add tool calling to memory, also use a FIFO queue instead of async sending and calculate WPM + ai response assumptions
+Properly refactor the memory system with querying like B does it
+Cleanup the code a bit
+Properly type the thing, we're currently JSON.string the memories I/O, stringify in the queries.ts
+Implement the BM25 thing
+give llm choice to reply or to generally not
+Fix attachment processing
+
+When pinging users mention @username then convert it to user ID like frank
+Improve system prompt to include tools
+When there is an attachment add Right now it just adds [Attachments: png, zip, png, png] for each file attached
+when if it is not a type it can process, remove all blank stuff messages (https://github.com/DomBom16/frank/blob/main/src/utils/aiResponse.ts)
+convert status or whatever in discord the yellow white block to text like frank
+Also another issue is the build context thing's reference replies are broken
+
+Refactor the ping system, the bot pings random people and doesn't know who is who
+Add edit delete messages functionality for gork, meaning it can understand when messages were edited and also edit it's own messages liek Frank
+
+Refactor logging system with child loggers
+
+Refactor the adding metadata so guild and channel are not strings, and are JSON but the retrieval converts JSON to string and vice versa
