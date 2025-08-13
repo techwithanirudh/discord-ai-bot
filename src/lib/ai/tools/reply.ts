@@ -2,16 +2,21 @@ import { createLogger } from '@/lib/logger';
 import { tool } from 'ai';
 import type { Message } from 'discord.js-selfbot-v13';
 import { z } from 'zod';
-import { setTimeout } from 'timers/promises';
 
 const logger = createLogger('tools:reply');
 
-export const reply = ({ message: { channel } }: { message: Message }) =>
+export const reply = ({ message }: { message: Message }) =>
   tool({
     description:
-      'A tool for providing your final response to a message. This method sends a reply to the message.',
+      'Send messages in the channel. If ID is provided, reply to that message; otherwise reply to the provided message.',
     inputSchema: z.object({
-      id: z.string().describe('The ID of the message to reply to'),
+      id: z
+        .string()
+        .trim()
+        .optional()
+        .describe(
+          'The ID of the message to reply to (optional). If omitted, replies to the latest message (the provided message).'
+        ),
       content: z.array(z.string()).describe('Lines of text to send'),
       type: z
         .enum(['reply', 'message'])
@@ -20,17 +25,20 @@ export const reply = ({ message: { channel } }: { message: Message }) =>
     }),
     execute: async ({ id, content, type }) => {
       try {
-        const target = await channel.messages.fetch(id);
+        const channel = message.channel;
+        if (!('send' in channel) || typeof channel.send !== 'function') {
+          return { success: false, error: 'Channel is not text-based' };
+        }
+
+        const target =
+          id && id.length > 0 ? await channel.messages.fetch(id) : message;
 
         if (!target) {
           logger.warn({ id }, 'Message not found');
           return { success: false, error: 'Message not found' };
         }
 
-        // await setTimeout(2000);
-
         for (const [idx, text] of content.entries()) {
-          // await setTimeout(2500);
           if (idx === 0 && type === 'reply') {
             await target.reply(text);
           } else {
@@ -38,11 +46,21 @@ export const reply = ({ message: { channel } }: { message: Message }) =>
           }
         }
 
-        logger.info({ id, content, type }, 'Replied to message');
+        logger.info(
+          { id: id ?? message.id, content, type },
+          'Replied to message'
+        );
 
-        return { success: true };
+        return {
+          success: true,
+          content:
+            'Successfully replied to message. Do NOT repeat the same message again.',
+        };
       } catch (error) {
-        logger.error({ error, id, content, type }, 'Failed to send reply');
+        logger.error(
+          { error, id: id ?? message.id, content, type },
+          'Failed to send reply'
+        );
         return { success: false, error: String(error) };
       }
     },
