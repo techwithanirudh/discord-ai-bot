@@ -23,6 +23,7 @@ This project was developed with the following technologies:
 - [Bun][bun]
 - [ESLint][eslint]
 - [Prettier][prettier]
+- Redis (plain, via ioredis)
 
 ## <a name="getting-started">📚 Getting Started</a>
 
@@ -39,6 +40,13 @@ $ bun install
 ```
 
 Next, copy the .env.example file, rename it to .env, and add your environment variables.
+
+Redis setup (required):
+
+- Install Redis locally or use a managed Redis that provides a standard redis:// URL
+- Set REDIS_URL in your .env, e.g.
+
+	redis://:password@localhost:6379/0
 Great! Now you just need to start the development server.
 
 ```bash
@@ -78,3 +86,4 @@ This project is under the MIT license. See the [LICENSE](LICENSE) for details.
 [ai-sdk]: https://ai-sdk.dev/
 [bun]: https://bun.sh/
 [exa]: https://exa.ai/
+[redis]: https://redis.io/

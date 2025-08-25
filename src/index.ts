@@ -1,6 +1,7 @@
 import { env } from '@/env';
 import { events } from '@/events';
 import { createLogger } from '@/lib/logger';
+import { redis } from '@/lib/kv';
 import { beginStatusUpdates } from '@/utils/status';
 import { Client } from 'discord.js-selfbot-v13';
 
@@ -11,6 +12,16 @@ client.once('ready', async () => {
   if (!client.user) return;
   logger.info(`Logged in as ${client.user.tag} (ID: ${client.user.id})`);
   logger.info('Bot is ready!');
+  // Ensure Redis connection is established and healthy
+  try {
+    if (!redis.status || redis.status === 'end') {
+      await redis.connect();
+    }
+    const pong = await redis.ping();
+    logger.info(`Redis connected (PING -> ${pong})`);
+  } catch (err) {
+    logger.warn({ err }, 'Redis connection failed; proceeding without cache');
+  }
   await beginStatusUpdates(client);
 });
 
@@ -44,4 +55,29 @@ Object.keys(events).forEach((key) => {
 
 client.login(env.DISCORD_TOKEN).catch((err) => {
   logger.error('Login failed:', err);
+});
+
+// Graceful shutdown
+async function shutdown(signal: string) {
+  try {
+    logger.info(`Received ${signal}, shutting down...`);
+    try {
+      await redis.quit();
+      logger.info('Redis connection closed');
+    } catch (e) {
+      logger.warn({ e }, 'Error closing Redis');
+      try { await redis.disconnect(); } catch {}
+    }
+  } finally {
+    process.exit(0);
+  }
+}
+
+process.on('SIGINT', () => shutdown('SIGINT'));
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+process.on('beforeExit', () => {
+  // Best-effort close without forcing process exit
+  if (redis.status && redis.status !== 'end') {
+    redis.quit().catch(() => redis.disconnect());
+  }
 });

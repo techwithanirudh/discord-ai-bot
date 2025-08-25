@@ -21,9 +21,8 @@ export const env = createEnv({
       .enum(['debug', 'info', 'warn', 'error'])
       .optional()
       .default('info'),
-    // Redis
-    UPSTASH_REDIS_REST_URL: z.url().min(1),
-    UPSTASH_REDIS_REST_TOKEN: z.string().min(1),
+    // Redis (standard Redis URL, e.g. redis://:password@host:6379/0)
+    REDIS_URL: z.string().min(1),
     // AssemblyAI
     DEEPGRAM_API_KEY: z.string().min(1),
     // Exa
