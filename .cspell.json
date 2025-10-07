@@ -39,6 +39,7 @@
     "dotproduct",
     "rerankinig",
     "textembbeding",
-    "lefthook"
+    "lefthook",
+    "jsonrepair"
   ]
 }
