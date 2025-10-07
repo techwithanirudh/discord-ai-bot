@@ -65,9 +65,8 @@ IMPORTANT: Don't interrupt ongoing conversations between other people unless:
   "reason": "The message is about you and you're interested in it."
 }
 
-Do NOT return anything else than the JSON object. Do NOT wrap the JSON object in quotes, or a codeblock.
-
-Be cool, be chill, be yourself.
+Do NOT return anything else than the JSON object, LIKE the suggested reply. Do NOT wrap the JSON object in quotes, or a codeblock.
+ONLY return the JSON Object, nothing ELSE.
 </task>`;
 
 // TODO: the response format manually needs to be passed due to https://github.com/OpenRouterTeam/ai-sdk-provider/issues/120, this issue.
