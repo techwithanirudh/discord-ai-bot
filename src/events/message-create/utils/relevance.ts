@@ -49,9 +49,9 @@ export async function assessRelevance(
               'The model tried to output JSON with the following data:',
               text,
               'and encountered an error:',
-              error?.cause,
+              String(error?.cause ?? ''),
               'The tool accepts the following schema:',
-              JSON.stringify(probabilitySchema),
+              `{ "probability": number, "reason": string }`,
               'Please fix the outputs.',
             ].join('\n'),
           });
