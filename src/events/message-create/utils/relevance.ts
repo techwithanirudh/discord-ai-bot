@@ -26,28 +26,33 @@ export async function assessRelevance(
         requestHints: hints,
       }),
       experimental_repairText: async ({ text, error }) => {
+        logger.info({ originalText: text, error }, '[experimental_repairText] invoked');
+
         try {
           const repaired = jsonrepair(text);
-          const parsed = JSON.parse(repaired);
 
+          const parsed = JSON.parse(repaired);
           const result = probabilitySchema.safeParse(parsed);
+
           if (!result.success) {
             throw new Error('Schema validation failed');
           }
 
           return JSON.stringify(result);
-        } catch {
+        } catch (err) {
+          logger.error({ err }, '[experimental_repairText] repair failed, falling back to model');
+
           const { object: repaired } = await generateObject({
             model: myProvider.languageModel('chat-model'),
             schema: probabilitySchema,
             prompt: [
-              `The model tried to output JSON with the following data:`,
+              'The model tried to output JSON with the following data:',
               text,
-              `and encountered an error`,
-              error.cause,
-              `The tool accepts the following schema:`,
+              'and encountered an error:',
+              error?.cause,
+              'The tool accepts the following schema:',
               JSON.stringify(probabilitySchema),
-              'Please fix the inputs.',
+              'Please fix the outputs.',
             ].join('\n'),
           });
 
