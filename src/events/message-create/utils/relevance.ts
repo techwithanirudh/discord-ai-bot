@@ -41,8 +41,10 @@ export async function assessRelevance(
             model: myProvider.languageModel('chat-model'),
             schema: probabilitySchema,
             prompt: [
-              `The model tried to output JSON` + ` with the following data:`,
+              `The model tried to output JSON with the following data:`,
               text,
+              `and encountered an error`,
+              error.cause,
               `The tool accepts the following schema:`,
               JSON.stringify(probabilitySchema),
               'Please fix the inputs.',
