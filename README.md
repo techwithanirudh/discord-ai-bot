@@ -46,8 +46,9 @@ Redis setup (required):
 - Install Redis locally or use a managed Redis that provides a standard redis:// URL
 - Set REDIS_URL in your .env, e.g.
 
-	redis://:password@localhost:6379/0
-Great! Now you just need to start the development server.
+      redis://:password@localhost:6379/0
+
+  Great! Now you just need to start the development server.
 
 ```bash
 # Start server
@@ -87,3 +88,30 @@ This project is under the MIT license. See the [LICENSE](LICENSE) for details.
 [bun]: https://bun.sh/
 [exa]: https://exa.ai/
 [redis]: https://redis.io/
+
+## Getting your Discord token:
+
+Run this in the console once you have opened Discord in a browser:
+
+```
+window.webpackChunkdiscord_app.push([
+    [Symbol()],
+    {},
+    req => {
+        if (!req.c) return;
+        for (let m of Object.values(req.c)) {
+            try {
+                if (!m.exports || m.exports === window) continue;
+                if (m.exports?.getToken) return copy(m.exports.getToken());
+                for (let ex in m.exports) {
+                    if (m.exports?.[ex]?.getToken && m.exports[ex][Symbol.toStringTag] !== 'IntlMessagesProxy') return copy(m.exports[ex].getToken());
+                }
+            } catch {}
+        }
+    },
+]);
+
+window.webpackChunkdiscord_app.pop();
+console.log('%cWorked!', 'font-size: 50px');
+console.log(`%cYou now have your token in the clipboard!`, 'font-size: 16px');
+```

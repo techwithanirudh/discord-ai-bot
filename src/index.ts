@@ -1,7 +1,7 @@
 import { env } from '@/env';
 import { events } from '@/events';
-import { createLogger } from '@/lib/logger';
 import { redis } from '@/lib/kv';
+import { createLogger } from '@/lib/logger';
 import { beginStatusUpdates } from '@/utils/status';
 import { Client } from 'discord.js-selfbot-v13';
 
@@ -66,7 +66,11 @@ async function shutdown(signal: string) {
       logger.info('Redis connection closed');
     } catch (e) {
       logger.warn({ e }, 'Error closing Redis');
-      try { await redis.disconnect(); } catch {}
+      try {
+        await redis.disconnect();
+      } catch {
+        // Ignore errors during forced disconnect
+      }
     }
   } finally {
     process.exit(0);

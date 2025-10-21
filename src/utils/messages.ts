@@ -31,15 +31,18 @@ function formatDiscordMessage(
   } = options;
 
   let result = '';
-  
+
   if (withTimestamp) {
     result += `[${msg.createdAt.toISOString()}] `;
   }
-  
-  const context = ref && withContext 
-    ? `Reply to ${ref.author.username}: "${ref.content.slice(0, 50)}${ref.content.length > 50 ? '...' : ''}"` 
-    : null;
-  
+
+  const context =
+    ref && withContext
+      ? `Reply to ${ref.author.username}: "${ref.content.slice(0, 50)}${
+          ref.content.length > 50 ? '...' : ''
+        }"`
+      : null;
+
   if (withAuthor) {
     if (context) {
       result += `${context}\n`;
@@ -50,16 +53,16 @@ function formatDiscordMessage(
   } else if (context) {
     result += `(${context}) `;
   }
-  
+
   result += msg.content;
-  
+
   if (withReactions && msg.reactions.cache.size > 0) {
     const reactions = Array.from(msg.reactions.cache.values())
-      .map(reaction => `${reaction.emoji.name}:${reaction.count}`)
+      .map((reaction) => `${reaction.emoji.name}:${reaction.count}`)
       .join(', ');
     result += ` | Reactions: ${reactions}`;
   }
-  
+
   return result;
 }
 
@@ -71,14 +74,14 @@ export async function convertToModelMessages(
       const ref = msg.reference
         ? await msg.fetchReference().catch(() => null)
         : null;
-      
+
       const isBot = msg.author.id === msg.client.user?.id;
       const structuredText = formatDiscordMessage(msg, ref, {
         withAuthor: true,
         withContext: true,
         withReactions: false,
         withTimestamp: false,
-        withId: true
+        withId: true,
       });
 
       if (isBot) {
