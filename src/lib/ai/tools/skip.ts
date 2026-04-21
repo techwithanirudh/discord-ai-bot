@@ -1,7 +1,7 @@
-import { createLogger } from '@/lib/logger';
 import { tool } from 'ai';
-import type { Message } from 'discord.js-selfbot-v13';
+import type { Message } from 'discord.js';
 import { z } from 'zod';
+import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('tools:skip');
 
@@ -14,13 +14,14 @@ export const skip = ({ message }: { message: Message }) =>
         .optional()
         .describe('Optional short reason for skipping'),
     }),
-    execute: async ({ reason }) => {
+    execute: ({ reason }) => {
       const { author, content } = message;
-      if (reason)
+      if (reason) {
         logger.info(
           { reason, message: `${author.username}: ${content}` },
           'Skipping reply'
         );
+      }
 
       return {
         success: true,

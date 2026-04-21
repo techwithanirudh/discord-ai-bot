@@ -1,15 +1,15 @@
-import { voice } from '@/config';
-import { createLogger } from '@/lib/logger';
-
-import { LiveTranscriptionEvents } from '@deepgram/sdk';
 import {
-  AudioPlayer,
+  type AudioPlayer,
   EndBehaviorType,
   type VoiceReceiver,
 } from '@discordjs/voice';
-import type { User } from 'discord.js-selfbot-v13';
-import * as prism from 'prism-media';
-import { deepgram, getAIResponse, playAudio, speak } from './helpers';
+import type { User } from 'discord.js';
+import { voice } from '@/config';
+import { env } from '@/env';
+import { createLogger } from '@/lib/logger';
+import { getAIResponse } from './helpers/ai';
+import { playAudio } from './helpers/audio';
+import { deepgram, speak } from './helpers/deepgram';
 
 const logger = createLogger('voice:stream');
 
@@ -21,66 +21,78 @@ export async function createListeningStream(
   const opusStream = receiver.subscribe(user.id, {
     end: {
       behavior: EndBehaviorType.AfterSilence,
-      duration: 1_000,
+      duration: 1000,
     },
   });
 
-  const oggStream = new prism.opus.OggLogicalBitstream({
-    opusHead: new prism.opus.OpusHead({
-      channelCount: 1,
-      sampleRate: 48_000,
-    }),
-    pageSizeControl: {
-      maxPackets: 10,
-    },
-  });
-
-  const stt = deepgram.listen.live({
-    smart_format: true,
-    filler_words: true,
-    interim_results: true,
-    vad_events: true,
-    sample_rate: 48_000,
-    model: 'nova-3',
+  const stt = await deepgram.listen.v1.connect({
+    Authorization: `Token ${env.DEEPGRAM_API_KEY}`,
+    channels: 1,
+    endpointing: 10,
+    encoding: 'opus',
+    interim_results: 'true',
     language: 'en-US',
+    model: 'nova-3',
+    punctuate: 'true',
+    sample_rate: 48_000,
+    vad_events: 'true',
   });
 
-  stt.on(LiveTranscriptionEvents.Open, () => {
-    stt.on(LiveTranscriptionEvents.Close, () => {
+  stt.on('open', () => {
+    stt.on('close', () => {
       logger.info('[Deepgram] Connection closed.');
     });
 
-    stt.on(LiveTranscriptionEvents.Transcript, async (data) => {
-      const transcript = data.channel.alternatives[0].transcript;
-      if (transcript.trim().length === 0) return;
+    stt.on('message', async (data) => {
+      if (
+        !('channel' in data) ||
+        Array.isArray(data.channel) ||
+        !('speech_final' in data)
+      ) {
+        return;
+      }
+
+      const transcript = data.channel.alternatives[0]?.transcript ?? '';
+      if (transcript.trim().length === 0) {
+        return;
+      }
       player.pause(true);
       if (data.speech_final) {
-        logger.info({ transcript }, `[Deepgram] Transcript`);
+        logger.info({ transcript }, '[Deepgram] Transcript');
         const text = await getAIResponse(transcript);
-        logger.info({ text }, `[Deepgram] AI Response`);
+        logger.info({ text }, '[Deepgram] AI Response');
         const audio = await speak({ text, model: voice.model });
-        if (!audio) return;
-        // @ts-expect-error this is a ReadableStream
-        playAudio(player, audio);
+        if (!audio) {
+          return;
+        }
+        await playAudio(player, audio);
       }
     });
 
-    stt.on(LiveTranscriptionEvents.Metadata, (data) => {
-      logger.debug({ data }, `[Deepgram] Metadata`);
+    stt.on('message', (data) => {
+      if (!('metadata' in data)) {
+        return;
+      }
+
+      logger.debug({ data }, '[Deepgram] Metadata');
     });
 
-    stt.on(LiveTranscriptionEvents.Error, (error) => {
-      logger.error({ error }, `[Deepgram] Error`);
+    stt.on('error', (error) => {
+      logger.error({ error }, '[Deepgram] Error');
     });
 
-    opusStream.pipe(oggStream);
-    oggStream.on('readable', () => {
-      let chunk;
-      while (null !== (chunk = oggStream.read())) stt.send(chunk);
+    opusStream.on('readable', () => {
+      for (;;) {
+        const chunk = opusStream.read();
+        if (chunk === null) {
+          break;
+        }
+        stt.sendMedia(chunk);
+      }
     });
 
     opusStream.on('end', () => {
-      stt.requestClose();
+      stt.close();
     });
   });
 }

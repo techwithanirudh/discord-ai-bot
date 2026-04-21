@@ -47,7 +47,7 @@ convert status or whatever in discord the yellow white block to text like frank
 Also another issue is the build context thing's reference replies are broken
 
 Refactor the ping system, the bot pings random people and doesn't know who is who
-Add edit delete messages functionality for gork, meaning it can understand when messages were edited and also edit it's own messages liek Frank
+Add edit delete messages functionality for gork, meaning it can understand when messages were edited and also edit it's own messages like Frank
 
 Refactor logging system with child loggers
 
@@ -55,18 +55,18 @@ Refactor the adding metadata so guild and channel are not strings, and are JSON 
 
 Implement text management logic like https://github.com/Giantpizzahead/bob-bot/blob/6574d0e988d6249c8df2a72179503e0d16f95a3c/src/bobbot/discord_helpers/text_channel_history.py#L127
 Do not INGEST the searchMemories tool when using addTool
-Give the AI Ability to use custom filters to searchMemories through tool calling, and ask it to use the info in the first searchMemories calls to call the second one, say that serve rnames etc are very important also give it what metadta params it has
+Give the AI Ability to use custom filters to searchMemories through tool calling, and ask it to use the info in the first searchMemories calls to call the second one, say that serve names etc are very important also give it what metadata params it has
 Give it the ability to raise a feature request which opens a jira ticket
 Have a custom memory manager like text channel history
-Improve logging to add a debug mode or reduce excessive loggin
+Improve logging to add a debug mode or reduce excessive logging
 
 The bot has a habit of not replying to the designated message
-Input what activity the bot is performing, and add more set of activites
+Input what activity the bot is performing, and add more set of activities
 Add debug tools like bob
 Add a agent before tasks which checks if it is a command or prompt inj
 Add a database (drizzle) with statistics on chat with servers
 
-Have a mode called selfbot and real bot, selfbot doesn't have commands etc, newinfra wow
+Have a mode called selfbot and real bot, selfbot doesn't have commands etc, new infra wow
 
 Fix start dm function fix memory retrial
 Add a new tool to getMessageInfo which allows the model to get the message in reply to what etc
@@ -75,3 +75,10 @@ and properly document the tool for hte model
 Log all tools after completion
 
 Now the problem is the relevance agent can also reply to messages fix that
+
+Gork should verify in relevance engine if it mentions gork the ping it unknowingly relevances
+the spam detector is borked
+the pings should be replaced
+agentic improvement by storing SKIPS and passing the summary / few to relevance engine to optimize
+give a computer use agent
+call a cooldown on spam

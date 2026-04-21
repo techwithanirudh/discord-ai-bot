@@ -8,11 +8,14 @@ export const env = createEnv({
       .default('development'),
     // Discord
     DISCORD_TOKEN: z.string().min(1),
+    DISCORD_CLIENT_ID: z.string().min(1),
     DISCORD_OWNER_ID: z.string().min(1),
     DISCORD_DEFAULT_GUILD_ID: z.string().optional(),
+    DISCORD_LOGS_CHANNEL_ID: z.string().optional(),
     // AI
     OPENAI_API_KEY: z.string().optional(),
-    HACKCLUB_API_KEY: z.string().min(1),
+    HACKCLUB_API_KEY: z.string().optional(),
+    GOOGLE_GENERATIVE_AI_API_KEY: z.string().optional(),
     // Logging
     LOG_DIRECTORY: z.string().optional().default('logs'),
     LOG_LEVEL: z
@@ -20,11 +23,15 @@ export const env = createEnv({
       .optional()
       .default('info'),
     // Redis (standard Redis URL, e.g. redis://:password@host:6379/0)
-    REDIS_URL: z.string().min(1),
+    REDIS_URL: z.url().min(1).optional(),
     // AssemblyAI
     DEEPGRAM_API_KEY: z.string().min(1),
     // Exa
     EXA_API_KEY: z.string().min(1),
+    // Langfuse
+    LANGFUSE_SECRET_KEY: z.string().min(1).optional(),
+    LANGFUSE_PUBLIC_KEY: z.string().min(1).optional(),
+    LANGFUSE_BASEURL: z.url().min(1).optional(),
     // Pinecone
     PINECONE_API_KEY: z.string().min(1),
     PINECONE_INDEX: z.string().min(1),

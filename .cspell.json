@@ -40,7 +40,12 @@
     "rerankinig",
     "textembbeding",
     "lefthook",
+    "neondatabase",
+    "unrs",
+    "qwen",
     "jsonrepair",
-    "webpackChunkdiscord"
+    "Jsonify",
+    "agentic",
+    "cooldown"
   ]
 }

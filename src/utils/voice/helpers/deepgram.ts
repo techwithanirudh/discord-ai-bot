@@ -1,23 +1,22 @@
+import { Readable } from 'node:stream';
+import { DeepgramClient } from '@deepgram/sdk';
 import { env } from '@/env';
-import { createClient } from '@deepgram/sdk';
 
-export const deepgram = createClient(env.DEEPGRAM_API_KEY);
+export const deepgram = new DeepgramClient({
+  apiKey: env.DEEPGRAM_API_KEY,
+});
 
-type SpeakProps = {
-  text: string;
+interface SpeakProps {
   model: string;
-};
+  text: string;
+}
 
 export async function speak({ text, model }: SpeakProps) {
-  const response = await deepgram.speak.request(
-    {
-      text,
-    },
-    {
-      model: model,
-    }
-  );
+  const response = await deepgram.speak.v1.audio.generate({
+    text,
+    model,
+  });
 
-  const stream = await response.getStream();
-  return stream;
+  const stream = response.stream();
+  return stream ? Readable.fromWeb(stream) : null;
 }

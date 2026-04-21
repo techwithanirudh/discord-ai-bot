@@ -1,9 +1,9 @@
-import { env } from '@/env';
 import { constants } from 'node:fs';
 import { access, mkdir } from 'node:fs/promises';
 import path from 'node:path';
 import type { Logger } from 'pino';
 import { default as pino, stdTimeFunctions, transport } from 'pino';
+import { env } from '@/env';
 
 async function exists(path: string): Promise<boolean> {
   try {

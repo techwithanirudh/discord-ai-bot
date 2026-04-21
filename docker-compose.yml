@@ -1,5 +1,5 @@
 services:
-  gork-selfbot:
+  gork:
     build: .
     env_file: .env
     environment:

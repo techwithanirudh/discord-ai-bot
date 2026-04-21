@@ -1,19 +1,21 @@
-import { createLogger } from '@/lib/logger';
-
-import { PineconeMetadataSchema } from '@/lib/validators/pinecone';
-import type { PineconeMetadataInput, PineconeMetadataOutput } from '@/types';
-import { type ScoredPineconeRecord } from '@pinecone-database/pinecone';
+import type { ScoredPineconeRecord } from '@pinecone-database/pinecone';
 import { embed } from 'ai';
 import { MD5 } from 'bun';
-import { myProvider } from '../ai/providers';
+import { createLogger } from '@/lib/logger';
+import {
+  flattenMetadata,
+  PineconeMetadataSchema,
+} from '@/lib/validators/pinecone';
+import type { PineconeMetadataInput, PineconeMetadataOutput } from '@/types';
+import { provider } from '../ai/providers';
 import { getIndex } from './index';
 
 const logger = createLogger('pinecone:queries');
 
 export interface MemorySearchOptions {
+  filter?: Record<string, unknown>;
   namespace?: string;
   topK?: number;
-  filter?: Record<string, any>;
 }
 
 export const searchMemories = async (
@@ -22,7 +24,7 @@ export const searchMemories = async (
 ): Promise<ScoredPineconeRecord<PineconeMetadataOutput>[]> => {
   try {
     const { embedding } = await embed({
-      model: myProvider.textEmbeddingModel('small-model'),
+      model: provider.embeddingModel('small-model'),
       value: query,
     });
 
@@ -59,14 +61,16 @@ export const searchMemories = async (
 
 export const addMemory = async (
   text: string,
-  metadata: Omit<PineconeMetadataInput, 'hash'>,
+  metadata: PineconeMetadataInput,
   namespace = 'default'
 ): Promise<string> => {
   try {
-    const id = new MD5().update(text).digest('hex');
+    const basis = `${metadata.sessionId ?? 'global'}:${metadata.type}:${text}`;
+    const id = new MD5().update(basis).digest('hex');
 
+    const flattened = flattenMetadata(metadata);
     const parsed = PineconeMetadataSchema.safeParse({
-      ...metadata,
+      ...flattened,
       hash: id,
     });
     if (!parsed.success) {
@@ -78,20 +82,25 @@ export const addMemory = async (
     }
 
     const { embedding } = await embed({
-      model: myProvider.textEmbeddingModel('small-model'),
+      model: provider.embeddingModel('small-model'),
       value: text,
     });
 
     const index = (await getIndex()).namespace(namespace);
-    await index.upsert([
-      {
-        id,
-        values: embedding,
-        metadata: parsed.data,
-      },
-    ]);
+    await index.upsert({
+      records: [
+        {
+          id,
+          values: embedding,
+          metadata: parsed.data,
+        },
+      ],
+    });
 
-    logger.debug({ id, metadata }, 'Added memory');
+    logger.debug(
+      { id, type: metadata.type, sessionId: metadata.sessionId },
+      'Added memory'
+    );
     return id;
   } catch (error) {
     logger.error({ error }, 'Error adding memory');
@@ -105,7 +114,7 @@ export const deleteMemory = async (
 ): Promise<void> => {
   try {
     const index = (await getIndex()).namespace(namespace);
-    await index.deleteOne(id);
+    await index.deleteOne({ id });
     logger.debug({ id }, 'Deleted memory');
   } catch (error) {
     logger.error({ error }, 'Error deleting memory');

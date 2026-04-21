@@ -1,8 +1,10 @@
+import type { Message } from 'discord.js';
 import type { RequestHints } from '@/types';
 import { corePrompt } from './core';
 import { examplesPrompt } from './examples';
 import { personalityPrompt } from './personality';
-import { relevancePrompt, replyPrompt } from './tasks';
+import { relevancePrompt } from './tasks/relevance';
+import { replyPrompt } from './tasks/reply';
 import { toolsPrompt } from './tools';
 
 export const getRequestPromptFromHints = (requestHints: RequestHints) => `\
@@ -19,15 +21,17 @@ Your current status is ${requestHints.status} and your activity is ${
 </context>`;
 
 export const systemPrompt = ({
-  selectedChatModel,
+  agent,
   requestHints,
+  message,
 }: {
-  selectedChatModel: string;
+  agent: string;
   requestHints: RequestHints;
+  message?: Message;
 }) => {
   const requestPrompt = getRequestPromptFromHints(requestHints);
 
-  if (selectedChatModel === 'chat-model') {
+  if (agent === 'chat') {
     return [
       corePrompt,
       personalityPrompt,
@@ -37,15 +41,16 @@ export const systemPrompt = ({
       replyPrompt,
     ]
       .filter(Boolean)
-      .join('\n')
+      .join('\n\n')
       .trim();
-  } else if (selectedChatModel === 'relevance-model') {
+  }
+  if (agent === 'relevance') {
     return [
       corePrompt,
       personalityPrompt,
       examplesPrompt,
       requestPrompt,
-      relevancePrompt,
+      relevancePrompt(message),
     ]
       .filter(Boolean)
       .join('\n\n')

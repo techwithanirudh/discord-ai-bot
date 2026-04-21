@@ -1,87 +1,138 @@
+import { type Message, PermissionsBitField } from 'discord.js';
 import { keywords, messageThreshold } from '@/config';
-import { ratelimit, redisKeys } from '@/lib/kv';
-import { addMemory } from '@/lib/pinecone/queries';
-import { getMessagesByChannel } from '@/lib/queries';
+import { isSilenced, ratelimit, redisKeys, unsetSilenced } from '@/lib/kv';
+import { createLogger } from '@/lib/logger';
+import { saveChatMemory } from '@/lib/memory';
+import { isUserAllowed } from '@/lib/users';
 import { buildChatContext } from '@/utils/context';
+import { logReply } from '@/utils/log';
 import {
-  resetMessageCount,
   checkMessageQuota,
   handleMessageCount,
+  resetMessageCount,
 } from '@/utils/message-rate-limiter';
-import { Client, Message } from 'discord.js-selfbot-v13';
+import { getTrigger } from '@/utils/triggers';
 import { assessRelevance } from './utils/relevance';
 import { generateResponse } from './utils/respond';
-
-import { createLogger } from '@/lib/logger';
-
-import { logReply } from '@/utils/log';
-import { getTrigger } from '@/utils/triggers';
-import type { ToolCallPart } from 'ai';
 
 const logger = createLogger('events:message');
 
 export const name = 'messageCreate';
 export const once = false;
 
-async function canReply(ctxId: string): Promise<boolean> {
-  const { success } = await ratelimit.limit(redisKeys.channelCount(ctxId));
-  if (!success) {
-    logger.info(`[${ctxId}] Rate limit hit. Skipping reply.`);
-  }
-  return success;
-}
-
-async function onSuccess(message: Message, toolCalls: ToolCallPart[]) {
-  const messages = await getMessagesByChannel({
-    channel: message.channel,
-    limit: 5,
-  });
-
-  const data = messages
-    .map((msg) => `${msg.author.username}: ${msg.content}`)
-    .join('\n');
-  const metadata = {
-    type: 'chat' as const,
-    context: data,
-    createdAt: Date.now(),
-    lastRetrievalTime: Date.now(),
-    guild: {
-      id: message.guild?.id ?? null,
-      name: message.guild?.name ?? null,
-    },
-    channel: {
-      id: message.channel.id,
-      name: message.channel.type === 'DM' ? 'DM' : message.channel.name ?? '',
-    },
-  };
-
-  await addMemory(data, metadata);
-}
-
-export async function execute(message: Message, _client: Client) {
-  if (message.author.bot) return;
-  if (message.author.id === message.client.user?.id) return;
-
-  const { content, client, guild, author } = message;
+async function canReply(message: Message): Promise<boolean> {
+  const { guild, author } = message;
   const isDM = !guild;
   const ctxId = isDM ? `dm:${author.id}` : guild.id;
 
-  if (!(await canReply(ctxId))) return;
+  const { success } = await ratelimit.limit(redisKeys.channelCount(ctxId));
+  if (!success) {
+    logger.info(`[${ctxId}] Rate limit hit. Skipping reply.`);
+    return false;
+  }
+
+  if (guild) {
+    const botMember = guild.members.me;
+    if (!botMember) {
+      return false;
+    }
+
+    const channel = message.channel;
+    if (!channel.isTextBased()) {
+      return false;
+    }
+
+    if (!channel.isDMBased() && 'guild' in channel) {
+      const permissions = botMember.permissionsIn(channel);
+      const hasReadPermission = permissions.has(
+        PermissionsBitField.Flags.ViewChannel
+      );
+      const hasSendPermission = permissions.has(
+        PermissionsBitField.Flags.SendMessages
+      );
+
+      if (!(hasReadPermission && hasSendPermission)) {
+        logger.debug(
+          { read: hasReadPermission, send: hasSendPermission },
+          `[${guild.id}] Missing permissions in channel ${channel.id}`
+        );
+        return false;
+      }
+    }
+  }
+
+  return true;
+}
+
+async function onSuccess(message: Message) {
+  await saveChatMemory(message, 5);
+}
+
+export async function execute(message: Message) {
+  if (message.partial) {
+    try {
+      // biome-ignore lint/style/noParameterAssign: partial fetch requires reassignment
+      message = await message.fetch();
+    } catch (error) {
+      logger.warn({ error }, 'Failed to fetch partial message');
+      return;
+    }
+  }
+
+  if (message.author.bot) {
+    return;
+  }
+  if (message.author.id === message.client.user?.id) {
+    return;
+  }
+  if (!isUserAllowed(message.author.id)) {
+    return;
+  }
+
+  const { content, client, guild, author } = message;
+  const isDM = !guild;
+  if (isDM) {
+    logger.info(
+      { channelId: message.channelId, author: author.username },
+      'DM received'
+    );
+  }
+  const ctxId = isDM ? `dm:${author.id}` : guild.id;
+
+  if (!(await canReply(message))) {
+    return;
+  }
 
   const botId = client.user?.id;
-  const trigger = await getTrigger(message, keywords, botId);
+  const trigger = getTrigger(message, keywords, botId);
+
+  if (
+    trigger.type !== 'ping' &&
+    (await isSilenced(isDM ? `dm:${author.id}` : message.channelId))
+  ) {
+    logger.debug({ ctxId }, 'Silenced — skipping');
+    return;
+  }
+
+  const { messages, hints } = await buildChatContext(message);
 
   if (trigger.type) {
+    if (trigger.type === 'ping') {
+      await unsetSilenced(isDM ? `dm:${author.id}` : message.channelId);
+    }
     await resetMessageCount(ctxId);
-    logger.info(`[${ctxId}] Triggered by ${trigger.type}`, {
-      message: `${author.username}: ${content}`
-    });
+    const stopTyping = startTyping(message.channel);
 
-    const { messages, hints } = await buildChatContext(message);
+    logger.info(
+      { message: `${author.username}: ${content}` },
+      `[${ctxId}] Triggered by ${trigger.type}`
+    );
+
     const result = await generateResponse(message, messages, hints);
+    stopTyping();
     logReply(ctxId, author.username, result, 'trigger');
     if (result.success && result.toolCalls) {
-      await onSuccess(message, result.toolCalls);
+      await onSuccess(message);
     }
     return;
   }
@@ -89,17 +140,21 @@ export async function execute(message: Message, _client: Client) {
   const { count: idleCount, hasQuota } = await checkMessageQuota(ctxId);
 
   if (!hasQuota) {
-    logger.debug(`[${ctxId}] Quota exhausted (${idleCount}/${messageThreshold})`);
+    logger.debug(
+      `[${ctxId}] Quota exhausted (${idleCount}/${messageThreshold})`
+    );
     return;
   }
 
-  const { messages, hints } = await buildChatContext(message);
   const { probability, reason } = await assessRelevance(
     message,
     messages,
     hints
   );
-  logger.info({ reason, probability, message: `${author.username}: ${content}` }, `[${ctxId}] Relevance check`);
+  logger.info(
+    { reason, probability, message: `${author.username}: ${content}` },
+    `[${ctxId}] Relevance check`
+  );
 
   const willReply = probability > 0.5;
   await handleMessageCount(ctxId, willReply);
@@ -109,12 +164,30 @@ export async function execute(message: Message, _client: Client) {
     return;
   }
 
-  logger.info(`[${ctxId}] Replying (relevance: ${probability.toFixed(2)})`, {
-    message: `${author.username}: ${content}`
-  });
+  const stopTyping = startTyping(message.channel);
+  logger.info(`[${ctxId}] Replying (relevance: ${probability.toFixed(2)})`);
   const result = await generateResponse(message, messages, hints);
+  stopTyping();
   logReply(ctxId, author.username, result, 'relevance');
   if (result.success && result.toolCalls) {
-    await onSuccess(message, result.toolCalls);
+    await onSuccess(message);
   }
+}
+
+function startTyping(channel: Message['channel']): () => void {
+  if (!('sendTyping' in channel) || typeof channel.sendTyping !== 'function') {
+    return () => {
+      /* no-op */
+    };
+  }
+  const send = () => {
+    (channel as { sendTyping(): Promise<void> })
+      .sendTyping()
+      .catch((_e: unknown) => {
+        /* ignore */
+      });
+  };
+  send();
+  const interval = setInterval(send, 8000);
+  return () => clearInterval(interval);
 }
