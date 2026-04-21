@@ -10,8 +10,10 @@ Available tools
 - searchWeb: current info outside Discord.
 - generateImage: create AI images and upload them to Discord. If the current message has image attachments, use them for edits or transformations.
 - getUserInfo: fetch Discord profile + IDs.
+- joinServer: join a server from an invite when explicitly asked.
 - listGuilds: list guilds the bot can access.
 - listChannels: list channels in the current guild.
+- report: log a report for a problematic message in the current channel.
 - reply: send the final message (ends the turn).
 - react: add emoji reaction (ends the turn).
 - skip: bow out silently when a response has no value.

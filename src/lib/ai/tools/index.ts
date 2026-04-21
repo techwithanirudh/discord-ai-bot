@@ -1,10 +1,12 @@
-import type { Message } from 'discord.js';
+import type { Message } from 'discord.js-selfbot-v13';
 import { generateImageTool } from './generate-image';
 import { getUserInfo } from './get-user-info';
 import { getWeather } from './get-weather';
+import { joinServer } from './join-server';
 import { listChannels } from './list-channels';
 import { listGuilds } from './list-guilds';
 import { react } from './react';
+import { report } from './report';
 import { reply } from './reply';
 import { searchMemories } from './search-memories';
 import { searchWeb } from './search-web';
@@ -22,9 +24,11 @@ export function createToolset({ message }: { message: Message }) {
     generateImage: generateImageTool({ message }),
     searchMemories: searchMemories(),
     getUserInfo: getUserInfo({ message }),
+    joinServer: joinServer({ message }),
     listChannels: listChannels({ message }),
     listGuilds: listGuilds({ message }),
     react: react({ message }),
+    report: report({ message }),
     reply: reply({ message }),
     skip: skip({ message }),
     startDM: startDM({ message }),

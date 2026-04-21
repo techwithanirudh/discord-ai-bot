@@ -1,4 +1,4 @@
-import type { Message } from 'discord.js';
+import type { Message } from 'discord.js-selfbot-v13';
 
 export type TriggerType = 'ping' | 'keyword' | 'dm' | null;
 

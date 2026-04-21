@@ -1,9 +1,12 @@
-import { type CommandInteraction, SlashCommandBuilder } from 'discord.js';
+import type { ApplicationCommandData } from 'discord.js-selfbot-v13';
+import { CommandInteraction } from 'discord.js-selfbot-v13';
 import { isSilenced, setSilenced, unsetSilenced } from '@/lib/kv';
 
-export const data = new SlashCommandBuilder()
-  .setName('shutup')
-  .setDescription('Toggle whether gork talks in this channel');
+export const data: ApplicationCommandData = {
+  name: 'shutup',
+  description: 'Toggle whether gork talks in this channel',
+  type: 1,
+};
 
 export async function execute(interaction: CommandInteraction) {
   const ctxId = interaction.channelId;

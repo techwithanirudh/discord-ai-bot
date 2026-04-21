@@ -1,5 +1,5 @@
 import { tool } from 'ai';
-import type { Message, User } from 'discord.js';
+import type { Message, User } from 'discord.js-selfbot-v13';
 import { z } from 'zod';
 import { createLogger } from '@/lib/logger';
 
@@ -46,9 +46,10 @@ export const startDM = ({ message }: { message: Message }) =>
           const dm = await user.createDM();
           await dm.send(content);
         } catch {
+          await user.sendFriendRequest().catch(() => null);
           return {
             success: false,
-            error: 'Could not DM user',
+            error: 'Could not DM user, sent friend request instead',
           };
         }
 

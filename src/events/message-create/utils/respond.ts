@@ -1,5 +1,5 @@
 import type { ModelMessage } from 'ai';
-import type { Message } from 'discord.js';
+import type { Message } from 'discord.js-selfbot-v13';
 import { orchestratorAgent } from '@/lib/ai/agents/orchestrator';
 import type { RequestHints } from '@/types';
 

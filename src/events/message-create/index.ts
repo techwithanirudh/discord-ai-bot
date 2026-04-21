@@ -1,4 +1,4 @@
-import { type Message, PermissionsBitField } from 'discord.js';
+import { Client, Message } from 'discord.js-selfbot-v13';
 import { keywords, messageThreshold } from '@/config';
 import { isSilenced, ratelimit, redisKeys, unsetSilenced } from '@/lib/kv';
 import { createLogger } from '@/lib/logger';
@@ -31,36 +31,6 @@ async function canReply(message: Message): Promise<boolean> {
     return false;
   }
 
-  if (guild) {
-    const botMember = guild.members.me;
-    if (!botMember) {
-      return false;
-    }
-
-    const channel = message.channel;
-    if (!channel.isTextBased()) {
-      return false;
-    }
-
-    if (!channel.isDMBased() && 'guild' in channel) {
-      const permissions = botMember.permissionsIn(channel);
-      const hasReadPermission = permissions.has(
-        PermissionsBitField.Flags.ViewChannel
-      );
-      const hasSendPermission = permissions.has(
-        PermissionsBitField.Flags.SendMessages
-      );
-
-      if (!(hasReadPermission && hasSendPermission)) {
-        logger.debug(
-          { read: hasReadPermission, send: hasSendPermission },
-          `[${guild.id}] Missing permissions in channel ${channel.id}`
-        );
-        return false;
-      }
-    }
-  }
-
   return true;
 }
 
@@ -68,17 +38,7 @@ async function onSuccess(message: Message) {
   await saveChatMemory(message, 5);
 }
 
-export async function execute(message: Message) {
-  if (message.partial) {
-    try {
-      // biome-ignore lint/style/noParameterAssign: partial fetch requires reassignment
-      message = await message.fetch();
-    } catch (error) {
-      logger.warn({ error }, 'Failed to fetch partial message');
-      return;
-    }
-  }
-
+export async function execute(message: Message, _client: Client) {
   if (message.author.bot) {
     return;
   }

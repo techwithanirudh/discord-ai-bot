@@ -1,5 +1,5 @@
 import { tool } from 'ai';
-import type { Message } from 'discord.js';
+import type { Message } from 'discord.js-selfbot-v13';
 import { z } from 'zod';
 import { createFuzzySearch } from '../utils/fuzzy';
 
@@ -41,18 +41,28 @@ export const listChannels = ({ message }: { message: Message }) =>
 
       if (type) {
         const typeMap = {
-          text: 0,
-          voice: 2,
-          forum: 15,
-          stage: 13,
-          category: 4,
-          news: 5,
-          thread: 11,
+          text: 'GUILD_TEXT',
+          voice: 'GUILD_VOICE',
+          forum: 'GUILD_FORUM',
+          stage: 'GUILD_STAGE_VOICE',
+          category: 'GUILD_CATEGORY',
+          news: 'GUILD_NEWS',
+          thread: 'GUILD_PUBLIC_THREAD',
         };
 
         const targetType = typeMap[type];
         if (targetType !== undefined) {
-          channels = channels.filter((c) => c.type === targetType);
+          if (type === 'thread') {
+            channels = channels.filter((c) =>
+              [
+                'GUILD_PUBLIC_THREAD',
+                'GUILD_PRIVATE_THREAD',
+                'GUILD_NEWS_THREAD',
+              ].includes(c.type)
+            );
+          } else {
+            channels = channels.filter((c) => c.type === targetType);
+          }
         }
       }
 

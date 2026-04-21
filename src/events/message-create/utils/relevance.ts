@@ -1,5 +1,5 @@
 import type { ModelMessage } from 'ai';
-import type { Message } from 'discord.js';
+import type { Message } from 'discord.js-selfbot-v13';
 import { relevanceAgent } from '@/lib/ai/agents/relevance';
 import { createLogger } from '@/lib/logger';
 import type { Probability } from '@/lib/validators/probability';

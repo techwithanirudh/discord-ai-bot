@@ -1,4 +1,4 @@
-import type { PresenceStatusData } from 'discord.js';
+import type { PresenceStatusData } from 'discord.js-selfbot-v13';
 import type { Activity } from './types';
 
 export const keywords = ['gork', 'grok'];

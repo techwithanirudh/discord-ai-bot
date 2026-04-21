@@ -1,4 +1,4 @@
-import type { Collection, Message as DiscordMessage } from 'discord.js';
+import type { Collection, Message as DiscordMessage } from 'discord.js-selfbot-v13';
 
 export interface UserMapEntry {
   displayName: string;

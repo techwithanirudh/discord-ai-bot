@@ -3,7 +3,7 @@ import {
   EndBehaviorType,
   type VoiceReceiver,
 } from '@discordjs/voice';
-import type { User } from 'discord.js';
+import type { User } from 'discord.js-selfbot-v13';
 import { voice } from '@/config';
 import { env } from '@/env';
 import { createLogger } from '@/lib/logger';

@@ -1,5 +1,5 @@
 import { generateImage, tool } from 'ai';
-import { AttachmentBuilder, type Message } from 'discord.js';
+import { MessageAttachment, type Message } from 'discord.js-selfbot-v13';
 import { z } from 'zod';
 import { provider } from '@/lib/ai/providers';
 import { createLogger } from '@/lib/logger';
@@ -95,9 +95,10 @@ export const generateImageTool = ({ message }: { message: Message }) =>
 
         const files = result.images.map(
           (image, index) =>
-            new AttachmentBuilder(Buffer.from(image.uint8Array), {
-              name: `gork-image-${index + 1}.${getFileExtension(image.mediaType)}`,
-            })
+            new MessageAttachment(
+              Buffer.from(image.uint8Array),
+              `gork-image-${index + 1}.${getFileExtension(image.mediaType)}`
+            )
         );
 
         await message.reply({

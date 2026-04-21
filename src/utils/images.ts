@@ -1,4 +1,7 @@
-import type { Collection, Attachment as DiscordAttachment } from 'discord.js';
+import type {
+  Collection,
+  MessageAttachment as DiscordAttachment,
+} from 'discord.js-selfbot-v13';
 import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('utils:images');

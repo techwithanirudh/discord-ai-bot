@@ -1,6 +1,6 @@
 import type { ScoredPineconeRecord } from '@pinecone-database/pinecone';
 import type { ModelMessage } from 'ai';
-import type { Message } from 'discord.js';
+import type { Message } from 'discord.js-selfbot-v13';
 import { city, country, memories as memoriesConfig, timezone } from '@/config';
 import { queryMemories } from '@/lib/pinecone/operations';
 import { getChannelName, getMessagesByChannel } from '@/lib/queries';

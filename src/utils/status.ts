@@ -1,8 +1,10 @@
-import type { Client } from 'discord.js';
+import type { ActivityType, PresenceStatusData } from 'discord.js-selfbot-v13';
+import { Client, RichPresence } from 'discord.js-selfbot-v13';
 import { activities, statuses } from '@/config';
 import { createLogger } from '@/lib/logger';
+import type { Activity } from '@/types';
 
-const logger = createLogger('presence');
+const logger = createLogger('status');
 
 const getRandomItem = <T>(arr: readonly T[]): T => {
   if (arr.length === 0) {
@@ -16,17 +18,47 @@ const getRandomItem = <T>(arr: readonly T[]): T => {
   return item;
 };
 
-const updateStatus = (client: Client): void => {
+const updateStatus = async (client: Client): Promise<void> => {
   if (!client.user) {
     return;
   }
 
-  const status = getRandomItem(statuses);
-  const activity = getRandomItem(activities);
+  const status = getRandomItem(statuses) as PresenceStatusData;
+  const activity = getRandomItem(activities) as Activity;
+
+  const activityType = [
+    'PLAYING',
+    'STREAMING',
+    'LISTENING',
+    'WATCHING',
+    'CUSTOM',
+    'COMPETING',
+    'HANG',
+  ][activity.type] as ActivityType;
+
+  const richPresence = new RichPresence(client)
+    .setName(activity.name)
+    .setType(activityType);
+
+  if (activity.image) {
+    try {
+      const externalImage = await RichPresence.getExternal(
+        client,
+        client.user.id,
+        activity.image
+      );
+      if (externalImage?.[0]?.external_asset_path) {
+        richPresence.setAssetsLargeImage(externalImage[0].external_asset_path);
+        logger.debug(`Set external image for activity: ${activity.name}`);
+      }
+    } catch (error) {
+      logger.error(`Failed to set external image for activity: ${error}`);
+    }
+  }
 
   client.user.setPresence({
     status,
-    activities: [{ name: activity.name, type: activity.type }],
+    activities: [richPresence],
   });
 
   logger.info(`Status: ${status}, Activity: ${activity.name}`);
@@ -35,9 +67,10 @@ const updateStatus = (client: Client): void => {
 const beginStatusUpdates = (
   client: Client,
   intervalMs = 10 * 60 * 1000
-): void => {
-  updateStatus(client);
-  setInterval(() => updateStatus(client), intervalMs);
+): Promise<void> => {
+  return updateStatus(client).then(() => {
+    setInterval(() => updateStatus(client), intervalMs);
+  });
 };
 
 export { beginStatusUpdates, updateStatus };

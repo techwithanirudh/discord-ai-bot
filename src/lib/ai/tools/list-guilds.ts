@@ -1,5 +1,5 @@
 import { tool } from 'ai';
-import type { Message } from 'discord.js';
+import type { Message } from 'discord.js-selfbot-v13';
 import { z } from 'zod';
 import { createFuzzySearch } from '../utils/fuzzy';
 

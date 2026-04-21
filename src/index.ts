@@ -1,11 +1,10 @@
 import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node';
 import { NodeSDK } from '@opentelemetry/sdk-node';
-import { Client, Events, GatewayIntentBits, Partials } from 'discord.js';
+import { Client } from 'discord.js-selfbot-v13';
 import { LangfuseExporter } from 'langfuse-vercel';
-import { commands } from '@/commands';
-import { deployCommands } from '@/deploy-commands';
 import { env } from '@/env';
 import { events } from '@/events';
+import { acceptPendingIncomingRequests } from '@/events/relationship-add';
 import { redis } from '@/lib/kv';
 import { createLogger } from '@/lib/logger';
 import { buildUserCache } from '@/lib/users';
@@ -18,24 +17,9 @@ export const langfuse = new NodeSDK({
   instrumentations: [getNodeAutoInstrumentations()],
 });
 
-export const client = new Client({
-  intents: [
-    GatewayIntentBits.Guilds,
-    GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.GuildMembers,
-    GatewayIntentBits.GuildPresences,
-    GatewayIntentBits.GuildMessageTyping,
-    GatewayIntentBits.GuildMessageReactions,
-    GatewayIntentBits.DirectMessages,
-    GatewayIntentBits.DirectMessageTyping,
-    GatewayIntentBits.DirectMessageReactions,
-    GatewayIntentBits.MessageContent,
-    GatewayIntentBits.GuildVoiceStates,
-  ],
-  partials: [Partials.Channel, Partials.Message, Partials.User],
-});
+export const client = new Client();
 
-client.once(Events.ClientReady, async (client) => {
+client.once('ready', async () => {
   if (!client.user) {
     return;
   }
@@ -57,94 +41,79 @@ client.once(Events.ClientReady, async (client) => {
   }
 
   langfuse.start();
-  beginStatusUpdates(client);
+  await acceptPendingIncomingRequests(client).catch((error) =>
+    logger.warn(
+      { error },
+      'Friend request startup sync failed; continuing without relationship sync'
+    )
+  );
   await buildUserCache(client).catch((error) =>
     logger.warn({ error }, 'Failed to build user cache')
   );
+  await beginStatusUpdates(client);
 });
 
-async function sendLogsMessage(message: string) {
-  const channelId = env.DISCORD_LOGS_CHANNEL_ID;
-  if (!channelId) {
+function registerEvent(event: any) {
+  if (event.name === 'messageCreate') {
+    const listener = (message: any) => {
+      Promise.resolve(event.execute(message, client)).catch((error) => {
+        logger.error({ error }, `Unhandled error in event: ${event.name}`);
+      });
+    };
+
+    if (event.once) {
+      client.once(event.name, listener);
+    } else {
+      client.on(event.name, listener);
+    }
     return;
   }
-  try {
-    const channel = await client.channels.fetch(channelId);
-    if (channel?.isTextBased() && 'send' in channel) {
-      await channel.send(message);
+
+  if (event.name === 'relationshipAdd') {
+    const listener = (userId: string, shouldNotify: boolean) => {
+      Promise.resolve(event.execute(userId, shouldNotify, client)).catch((error) => {
+        logger.error({ error }, `Unhandled error in event: ${event.name}`);
+      });
+    };
+
+    if (event.once) {
+      client.once(event.name, listener);
+    } else {
+      client.on(event.name, listener);
     }
-  } catch (error) {
-    logger.warn({ error }, 'Failed to send logs channel message');
+    return;
+  }
+
+  if (event.name === 'relationshipRemove') {
+    const listener = (userId: string, type: number, nickname: string | null) => {
+      Promise.resolve(event.execute(userId, type, nickname, client)).catch((error) => {
+        logger.error({ error }, `Unhandled error in event: ${event.name}`);
+      });
+    };
+
+    if (event.once) {
+      client.once(event.name, listener);
+    } else {
+      client.on(event.name, listener);
+    }
+    return;
+  }
+
+  const listener = (...args: any[]) => {
+    Promise.resolve(event.execute(...args, client)).catch((error) => {
+      logger.error({ error }, `Unhandled error in event: ${event.name}`);
+    });
+  };
+
+  if (event.once) {
+    client.once(event.name, listener);
+  } else {
+    client.on(event.name, listener);
   }
 }
 
-client.on(Events.GuildMemberUpdate, (_oldMember, newMember) => {
-  const roleId = env.DISCORD_OPT_IN_ROLE_ID;
-  if (!roleId) {
-    return;
-  }
-  if (newMember.roles.cache.has(roleId)) {
-    addUser(newMember.id);
-  } else {
-    removeUser(newMember.id);
-  }
-});
-
-client.on(Events.GuildCreate, async (guild) => {
-  await deployCommands({ guildId: guild.id });
-  logger.info({ guildId: guild.id, guildName: guild.name }, 'Added to guild');
-  await sendLogsMessage(`added to server: **${guild.name}** (\`${guild.id}\`)`);
-
-  const channel = guild.systemChannel;
-  if (channel) {
-    await channel.send("yeah i'm here, try not to make it weird");
-  }
-});
-
-client.on(Events.GuildDelete, async (guild) => {
-  logger.info(
-    { guildId: guild.id, guildName: guild.name },
-    'Removed from guild'
-  );
-  await sendLogsMessage(
-    `removed from server: **${guild.name}** (\`${guild.id}\`)`
-  );
-});
-
-client.on(Events.InteractionCreate, (interaction) => {
-  if (!interaction.isChatInputCommand()) {
-    return;
-  }
-  const { commandName } = interaction;
-  if (commands[commandName as keyof typeof commands]) {
-    commands[commandName as keyof typeof commands]
-      // biome-ignore lint/suspicious/noExplicitAny: command execute signatures vary by command
-      .execute(interaction as any)
-      .catch((error: unknown) => {
-        logger.error({ error }, 'Command execution failed');
-      });
-  }
-});
-
-for (const key of Object.keys(events)) {
-  const event = events[key as keyof typeof events];
-
-  const handler = (...args: unknown[]) => {
-    const result = (event.execute as (...eventArgs: unknown[]) => unknown)(
-      ...args
-    );
-    if (result instanceof Promise) {
-      result.catch((error: unknown) =>
-        logger.error({ error }, `Unhandled error in event: ${event.name}`)
-      );
-    }
-  };
-
-  if (event?.once) {
-    client.once(event.name, handler);
-  } else {
-    client.on(event.name, handler);
-  }
+for (const event of events) {
+  registerEvent(event);
 }
 
 const gracefulShutdown = async (signal: string) => {

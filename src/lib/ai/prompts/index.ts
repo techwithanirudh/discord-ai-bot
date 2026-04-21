@@ -1,4 +1,4 @@
-import type { Message } from 'discord.js';
+import type { Message } from 'discord.js-selfbot-v13';
 import type { RequestHints } from '@/types';
 import { corePrompt } from './core';
 import { examplesPrompt } from './examples';

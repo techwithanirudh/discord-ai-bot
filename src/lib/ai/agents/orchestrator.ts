@@ -1,5 +1,5 @@
 import { stepCountIs, ToolLoopAgent } from 'ai';
-import type { Message } from 'discord.js';
+import type { Message } from 'discord.js-selfbot-v13';
 import { saveToolMemory } from '@/lib/memory';
 import type { RequestHints } from '@/types/request';
 import { systemPrompt } from '../prompts';

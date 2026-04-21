@@ -1,4 +1,4 @@
-import type { Client } from 'discord.js';
+import type { Client } from 'discord.js-selfbot-v13';
 import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('users');
@@ -7,6 +7,17 @@ const userCache = new Map<string, { username: string; displayName: string }>();
 
 export async function buildUserCache(client: Client) {
   logger.info('Building user cache from guilds');
+
+  await client.relationships.fetch().catch((error) => {
+    logger.warn({ error }, 'Failed to fetch relationships before user cache build');
+  });
+
+  for (const [, user] of client.relationships.friendCache) {
+    userCache.set(user.id, {
+      username: user.username,
+      displayName: user.displayName ?? user.username,
+    });
+  }
 
   for (const [, guild] of client.guilds.cache) {
     try {
@@ -32,6 +43,18 @@ export async function buildUserCache(client: Client) {
 
 export function cacheUser(id: string, username: string, displayName: string) {
   userCache.set(id, { username, displayName });
+}
+
+export function addUser(
+  id: string,
+  username = 'unknown',
+  displayName = 'unknown'
+) {
+  userCache.set(id, { username, displayName });
+}
+
+export function removeUser(id: string) {
+  userCache.delete(id);
 }
 
 export function getUser(id: string) {

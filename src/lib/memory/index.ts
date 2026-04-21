@@ -1,10 +1,9 @@
 import {
-  ChannelType,
   type DMChannel,
   type GuildTextBasedChannel,
   type Message,
   type User,
-} from 'discord.js';
+} from 'discord.js-selfbot-v13';
 import { redis, redisKeys } from '@/lib/kv';
 import { createLogger } from '@/lib/logger';
 import { addMemory } from '@/lib/pinecone/queries';
@@ -63,29 +62,27 @@ export function guildInfoFromMessage(message: Message): GuildInfo {
 }
 
 export function channelInfoFromMessage(message: Message): ChannelInfo {
+  const channel = message.channel;
   let type: ChannelInfo['type'] = 'unknown';
-  if (message.channel.type === ChannelType.DM) {
+  if ('recipient' in channel || 'recipients' in channel) {
     type = 'dm';
-  } else if (message.channel.type === ChannelType.GuildText) {
-    type = 'text';
-  } else if (message.channel.type === ChannelType.GuildVoice) {
-    type = 'voice';
-  } else if (
-    message.channel.type === ChannelType.PublicThread ||
-    message.channel.type === ChannelType.PrivateThread
-  ) {
+  } else if ('isThread' in channel && channel.isThread()) {
     type = 'thread';
+  } else if ('bitrate' in channel) {
+    type = 'voice';
+  } else if ('name' in channel) {
+    type = 'text';
   }
 
   let name = '';
-  if (message.channel.type === ChannelType.DM) {
-    name = dmDisplayName(message.channel as DMChannel, message.author);
-  } else if ('name' in message.channel) {
-    name = (message.channel as GuildTextBasedChannel).name ?? '';
+  if ('recipient' in channel || 'recipients' in channel) {
+    name = dmDisplayName(channel as DMChannel, message.author);
+  } else if ('name' in channel) {
+    name = (channel as GuildTextBasedChannel).name ?? '';
   }
 
   return {
-    id: message.channel.id,
+    id: channel.id,
     name,
     type,
   };

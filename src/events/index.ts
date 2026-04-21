@@ -1,13 +1,5 @@
-import {
-  execute as messageCreateExecute,
-  name as messageCreateName,
-  once as messageCreateOnce,
-} from './message-create';
+import * as messageCreate from './message-create';
+import * as relationshipAdd from './relationship-add';
+import * as relationshipRemove from './relationship-remove';
 
-export const events = {
-  messageCreate: {
-    execute: messageCreateExecute,
-    name: messageCreateName,
-    once: messageCreateOnce,
-  },
-};
+export const events = [messageCreate, relationshipAdd, relationshipRemove];

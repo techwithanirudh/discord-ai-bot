@@ -1,5 +1,5 @@
 import { Experimental_Agent as Agent, tool } from 'ai';
-import type { Message } from 'discord.js';
+import type { Message } from 'discord.js-selfbot-v13';
 import { probabilitySchema } from '@/lib/validators/probability';
 import type { RequestHints } from '@/types/request';
 import { systemPrompt } from '../prompts';

@@ -1,5 +1,5 @@
 import { tool } from 'ai';
-import type { Message, User } from 'discord.js';
+import type { Message, User } from 'discord.js-selfbot-v13';
 import { z } from 'zod/v4';
 import { createLogger } from '@/lib/logger';
 

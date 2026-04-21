@@ -1,12 +1,6 @@
 import {
-  type Channel,
   type Message as DiscordMessage,
-  NewsChannel,
-  StageChannel,
-  TextChannel,
-  ThreadChannel,
-  VoiceChannel,
-} from 'discord.js';
+} from 'discord.js-selfbot-v13';
 import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('queries');
@@ -35,15 +29,12 @@ export async function getMessagesByChannel({
   }
 }
 
-export function getChannelName(channel: Channel): string {
-  if (
-    channel instanceof TextChannel ||
-    channel instanceof NewsChannel ||
-    channel instanceof VoiceChannel ||
-    channel instanceof StageChannel ||
-    channel instanceof ThreadChannel
-  ) {
+export function getChannelName(channel: DiscordMessage['channel']): string {
+  if ('name' in channel && typeof channel.name === 'string') {
     return channel.name;
+  }
+  if ('recipient' in channel && channel.recipient?.username) {
+    return channel.recipient.username;
   }
 
   return 'N/A';

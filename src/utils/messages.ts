@@ -1,9 +1,9 @@
 import type { FilePart, ModelMessage } from 'ai';
 import {
   type Collection,
-  type Attachment as DiscordAttachment,
   Message as DiscordMessage,
-} from 'discord.js';
+  MessageAttachment,
+} from 'discord.js-selfbot-v13';
 import { createLogger } from '@/lib/logger';
 import { buildUserMap, type UserMapEntry } from '@/utils/users';
 
@@ -131,7 +131,7 @@ export async function convertToModelMessages(
 }
 
 export function processAttachments(
-  attachments: Collection<string, DiscordAttachment>
+  attachments: Collection<string, MessageAttachment>
 ): FilePart[] {
   const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
 

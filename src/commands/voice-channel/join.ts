@@ -5,30 +5,38 @@ import {
   joinVoiceChannel,
   VoiceConnectionStatus,
 } from '@discordjs/voice';
-import type { ChatInputCommandInteraction } from 'discord.js';
 import { createListeningStream } from '@/utils/voice/stream';
+import type { ApplicationCommandData } from 'discord.js-selfbot-v13';
+import { CommandInteraction } from 'discord.js-selfbot-v13';
 
-// export const data = new SlashCommandBuilder()
-//   .setName('join')
-//   .setDescription('Joins the voice channel that you are in');
+export const data: ApplicationCommandData = {
+  name: 'join',
+  description: 'Joins the voice channel that you are in',
+  type: 1,
+};
 
-export async function execute(
-  interaction: ChatInputCommandInteraction<'cached'>
-) {
+export async function execute(interaction: CommandInteraction) {
   await interaction.deferReply();
 
-  let connection = getVoiceConnection(interaction.guildId);
+  if (!interaction.guild || !interaction.member) {
+    await interaction.followUp('This command can only be used in a server.');
+    return;
+  }
+
+  let connection = getVoiceConnection(interaction.guild.id);
 
   if (!connection) {
-    if (!interaction.member?.voice.channel) {
-      await interaction.followUp("okay, but you're not in vc");
+    const member = await interaction.guild.members.fetch(interaction.user.id);
+    const voiceChannel = member.voice.channel;
 
+    if (!voiceChannel) {
+      await interaction.followUp("okay, but you're not in vc");
       return;
     }
 
     connection = joinVoiceChannel({
       adapterCreator: interaction.guild.voiceAdapterCreator,
-      channelId: interaction.member.voice.channel.id,
+      channelId: voiceChannel.id,
       guildId: interaction.guild.id,
       selfDeaf: false,
       selfMute: true,
@@ -52,6 +60,7 @@ export async function execute(
     await interaction.followUp(
       "oops, idk what happened. I couldn't join the voice channel."
     );
+    return;
   }
 
   await interaction.followUp('thanks for inviting me! joined');
