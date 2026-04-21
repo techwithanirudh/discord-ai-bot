@@ -32,8 +32,7 @@ runs:
         DISCORD_OWNER_ID=your_discord_owner_id_here
         DISCORD_DEFAULT_GUILD_ID=your_discord_default_guild_id_here
         OPENAI_API_KEY=sk-your_openai_api_key_here
-        UPSTASH_REDIS_REST_URL=https://your_upstash_redis_rest_url.upstash.io
-        UPSTASH_REDIS_REST_TOKEN=your_upstash_redis_rest_token
+        REDIS_URL=redis://localhost:6379/0
         LOG_LEVEL=INFO
         LOG_DIRECTORY=logs
         DEEPGRAM_API_KEY=your_deepgram_api_key_here
