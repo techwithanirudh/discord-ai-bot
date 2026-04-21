@@ -8,7 +8,7 @@ import {
   checkMessageQuota,
   handleMessageCount,
 } from '@/utils/message-rate-limiter';
-import { Message } from 'discord.js-selfbot-v13';
+import { Client, Message } from 'discord.js-selfbot-v13';
 import { assessRelevance } from './utils/relevance';
 import { generateResponse } from './utils/respond';
 
@@ -58,7 +58,7 @@ async function onSuccess(message: Message, toolCalls: ToolCallPart[]) {
   await addMemory(data, metadata);
 }
 
-export async function execute(message: Message) {
+export async function execute(message: Message, _client: Client) {
   if (message.author.bot) return;
   if (message.author.id === message.client.user?.id) return;
 

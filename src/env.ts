@@ -12,9 +12,7 @@ export const env = createEnv({
     DISCORD_DEFAULT_GUILD_ID: z.string().optional(),
     // AI
     OPENAI_API_KEY: z.string().optional(),
-    HACKCLUB_API_KEY: z.string().optional(),
-    OPENROUTER_API_KEY: z.string().optional(),
-    GOOGLE_GENERATIVE_AI_API_KEY: z.string().optional(),
+    HACKCLUB_API_KEY: z.string().min(1),
     // Logging
     LOG_DIRECTORY: z.string().optional().default('logs'),
     LOG_LEVEL: z

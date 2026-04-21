@@ -1,5 +1,6 @@
 import { env } from '@/env';
 import { events } from '@/events';
+import { acceptPendingIncomingRequests } from '@/events/relationship-add';
 import { redis } from '@/lib/kv';
 import { createLogger } from '@/lib/logger';
 import { beginStatusUpdates } from '@/utils/status';
@@ -22,6 +23,14 @@ client.once('ready', async () => {
   } catch (err) {
     logger.warn({ err }, 'Redis connection failed; proceeding without cache');
   }
+  try {
+    await acceptPendingIncomingRequests(client);
+  } catch (err) {
+    logger.warn(
+      { err },
+      'Friend request startup sync failed; continuing without relationship sync'
+    );
+  }
   await beginStatusUpdates(client);
 });
 
@@ -34,16 +43,41 @@ client.on('guildCreate', (guild) => {
   }
 });
 
-Object.keys(events).forEach((key) => {
-  const event = events[key as keyof typeof events];
-  if (!event) return;
+function registerEvent(event: any) {
+  if (event.name === 'messageCreate') {
+    const listener = (message: any) => {
+      Promise.resolve(event.execute(message, client)).catch((err) => {
+        logger.error(`Error in event ${event.name}:`, err);
+      });
+    };
 
-  const listener = (...args: Parameters<typeof event.execute>) => {
-    try {
-      event.execute(...args);
-    } catch (err) {
-      logger.error(`Error in event ${event.name}:`, err);
+    if (event.once) {
+      client.once(event.name, listener);
+    } else {
+      client.on(event.name, listener);
     }
+    return;
+  }
+
+  if (event.name === 'relationshipAdd') {
+    const listener = (userId: string, shouldNotify: boolean) => {
+      Promise.resolve(event.execute(userId, shouldNotify, client)).catch((err) => {
+        logger.error(`Error in event ${event.name}:`, err);
+      });
+    };
+
+    if (event.once) {
+      client.once(event.name, listener);
+    } else {
+      client.on(event.name, listener);
+    }
+    return;
+  }
+
+  const listener = (...args: any[]) => {
+    Promise.resolve(event.execute(...args, client)).catch((err) => {
+      logger.error(`Error in event ${event.name}:`, err);
+    });
   };
 
   if (event.once) {
@@ -51,6 +85,10 @@ Object.keys(events).forEach((key) => {
   } else {
     client.on(event.name, listener);
   }
+}
+
+events.forEach((event) => {
+  registerEvent(event);
 });
 
 client.login(env.DISCORD_TOKEN).catch((err) => {

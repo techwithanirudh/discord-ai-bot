@@ -10,6 +10,16 @@ export async function getAIResponse(prompt: string): Promise<string> {
     system:
       systemPrompt({
         selectedChatModel: 'chat-model',
+        requestHints: {
+          activity: 'none',
+          channel: 'voice',
+          city: 'Unknown',
+          country: 'Unknown',
+          joined: 0,
+          server: 'Unknown',
+          status: 'online',
+          time: new Date().toISOString(),
+        },
       }) +
       '\n\nYou are talking to a person through a call, do not use markdown formatting, or emojis.',
     model: myProvider.languageModel('chat-model'),
