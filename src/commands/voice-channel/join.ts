@@ -5,9 +5,11 @@ import {
   joinVoiceChannel,
   VoiceConnectionStatus,
 } from '@discordjs/voice';
+import type {
+  ApplicationCommandData,
+  CommandInteraction,
+} from 'discord.js-selfbot-v13';
 import { createListeningStream } from '@/utils/voice/stream';
-import type { ApplicationCommandData } from 'discord.js-selfbot-v13';
-import { CommandInteraction } from 'discord.js-selfbot-v13';
 
 export const data: ApplicationCommandData = {
   name: 'join',
@@ -18,7 +20,7 @@ export const data: ApplicationCommandData = {
 export async function execute(interaction: CommandInteraction) {
   await interaction.deferReply();
 
-  if (!interaction.guild || !interaction.member) {
+  if (!(interaction.guild && interaction.member)) {
     await interaction.followUp('This command can only be used in a server.');
     return;
   }

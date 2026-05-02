@@ -1,8 +1,8 @@
 import type {
   ApplicationCommandData,
   ApplicationCommandSubCommandData,
+  CommandInteraction,
 } from 'discord.js-selfbot-v13';
-import { CommandInteraction } from 'discord.js-selfbot-v13';
 import * as join from './join';
 import * as leave from './leave';
 

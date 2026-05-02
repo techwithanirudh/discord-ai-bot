@@ -1,6 +1,6 @@
-import { removeUser } from '@/lib/users';
+import type { Client } from 'discord.js-selfbot-v13';
 import { createLogger } from '@/lib/logger';
-import { Client } from 'discord.js-selfbot-v13';
+import { removeUser } from '@/lib/users';
 
 const logger = createLogger('relationships');
 

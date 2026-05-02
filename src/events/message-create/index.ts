@@ -1,4 +1,4 @@
-import { Client, Message } from 'discord.js-selfbot-v13';
+import type { Client, Message } from 'discord.js-selfbot-v13';
 import { keywords, messageThreshold } from '@/config';
 import { isSilenced, ratelimit, redisKeys, unsetSilenced } from '@/lib/kv';
 import { createLogger } from '@/lib/logger';

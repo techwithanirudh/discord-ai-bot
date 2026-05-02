@@ -71,9 +71,11 @@ function registerEvent(event: any) {
 
   if (event.name === 'relationshipAdd') {
     const listener = (userId: string, shouldNotify: boolean) => {
-      Promise.resolve(event.execute(userId, shouldNotify, client)).catch((error) => {
-        logger.error({ error }, `Unhandled error in event: ${event.name}`);
-      });
+      Promise.resolve(event.execute(userId, shouldNotify, client)).catch(
+        (error) => {
+          logger.error({ error }, `Unhandled error in event: ${event.name}`);
+        }
+      );
     };
 
     if (event.once) {
@@ -85,10 +87,16 @@ function registerEvent(event: any) {
   }
 
   if (event.name === 'relationshipRemove') {
-    const listener = (userId: string, type: number, nickname: string | null) => {
-      Promise.resolve(event.execute(userId, type, nickname, client)).catch((error) => {
-        logger.error({ error }, `Unhandled error in event: ${event.name}`);
-      });
+    const listener = (
+      userId: string,
+      type: number,
+      nickname: string | null
+    ) => {
+      Promise.resolve(event.execute(userId, type, nickname, client)).catch(
+        (error) => {
+          logger.error({ error }, `Unhandled error in event: ${event.name}`);
+        }
+      );
     };
 
     if (event.once) {

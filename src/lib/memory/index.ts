@@ -1,8 +1,8 @@
-import {
-  type DMChannel,
-  type GuildTextBasedChannel,
-  type Message,
-  type User,
+import type {
+  DMChannel,
+  GuildTextBasedChannel,
+  Message,
+  User,
 } from 'discord.js-selfbot-v13';
 import { redis, redisKeys } from '@/lib/kv';
 import { createLogger } from '@/lib/logger';

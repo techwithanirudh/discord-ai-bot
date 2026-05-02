@@ -1,6 +1,8 @@
 import { getVoiceConnection } from '@discordjs/voice';
-import type { ApplicationCommandData } from 'discord.js-selfbot-v13';
-import { CommandInteraction } from 'discord.js-selfbot-v13';
+import type {
+  ApplicationCommandData,
+  CommandInteraction,
+} from 'discord.js-selfbot-v13';
 
 export const data: ApplicationCommandData = {
   name: 'leave',

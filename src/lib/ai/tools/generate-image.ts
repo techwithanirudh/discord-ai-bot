@@ -1,5 +1,5 @@
 import { generateImage, tool } from 'ai';
-import { MessageAttachment, type Message } from 'discord.js-selfbot-v13';
+import { type Message, MessageAttachment } from 'discord.js-selfbot-v13';
 import { z } from 'zod';
 import { provider } from '@/lib/ai/providers';
 import { createLogger } from '@/lib/logger';

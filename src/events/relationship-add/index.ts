@@ -1,6 +1,6 @@
-import { addUser } from '@/lib/users';
+import type { Client } from 'discord.js-selfbot-v13';
 import { createLogger } from '@/lib/logger';
-import { Client } from 'discord.js-selfbot-v13';
+import { addUser } from '@/lib/users';
 
 const logger = createLogger('relationships');
 const PENDING_INCOMING = 3;
@@ -23,7 +23,10 @@ async function acceptIncomingFriendRequest(userId: string, client: Client) {
     const api = client.api as any;
     const relationshipApi = api.users['@me'].relationships[userId];
     if (!relationshipApi) {
-      logger.warn({ userId, username }, 'Relationship API not available for user');
+      logger.warn(
+        { userId, username },
+        'Relationship API not available for user'
+      );
       return false;
     }
 
@@ -44,7 +47,10 @@ async function acceptIncomingFriendRequest(userId: string, client: Client) {
     logger.info({ userId, username }, 'Accepted incoming friend request');
     return true;
   } catch (error) {
-    logger.error({ error, userId, username }, 'Failed to accept incoming friend request');
+    logger.error(
+      { error, userId, username },
+      'Failed to accept incoming friend request'
+    );
     return false;
   }
 }
@@ -58,8 +64,13 @@ export async function acceptPendingIncomingRequests(client: Client) {
     return;
   }
 
-  logger.info({ count: pendingIds.length }, 'Processing pending incoming friend requests');
-  await Promise.all(pendingIds.map((userId) => acceptIncomingFriendRequest(userId, client)));
+  logger.info(
+    { count: pendingIds.length },
+    'Processing pending incoming friend requests'
+  );
+  await Promise.all(
+    pendingIds.map((userId) => acceptIncomingFriendRequest(userId, client))
+  );
 }
 
 export async function execute(

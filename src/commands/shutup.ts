@@ -1,5 +1,7 @@
-import type { ApplicationCommandData } from 'discord.js-selfbot-v13';
-import { CommandInteraction } from 'discord.js-selfbot-v13';
+import type {
+  ApplicationCommandData,
+  CommandInteraction,
+} from 'discord.js-selfbot-v13';
 import { isSilenced, setSilenced, unsetSilenced } from '@/lib/kv';
 
 export const data: ApplicationCommandData = {

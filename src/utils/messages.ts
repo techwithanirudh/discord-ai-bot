@@ -2,7 +2,7 @@ import type { FilePart, ModelMessage } from 'ai';
 import {
   type Collection,
   Message as DiscordMessage,
-  MessageAttachment,
+  type MessageAttachment,
 } from 'discord.js-selfbot-v13';
 import { createLogger } from '@/lib/logger';
 import { buildUserMap, type UserMapEntry } from '@/utils/users';

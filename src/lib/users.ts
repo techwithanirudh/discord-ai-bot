@@ -9,7 +9,10 @@ export async function buildUserCache(client: Client) {
   logger.info('Building user cache from guilds');
 
   await client.relationships.fetch().catch((error) => {
-    logger.warn({ error }, 'Failed to fetch relationships before user cache build');
+    logger.warn(
+      { error },
+      'Failed to fetch relationships before user cache build'
+    );
   });
 
   for (const [, user] of client.relationships.friendCache) {

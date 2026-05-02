@@ -1,5 +1,5 @@
 import type { ActivityType, PresenceStatusData } from 'discord.js-selfbot-v13';
-import { Client, RichPresence } from 'discord.js-selfbot-v13';
+import { type Client, RichPresence } from 'discord.js-selfbot-v13';
 import { activities, statuses } from '@/config';
 import { createLogger } from '@/lib/logger';
 import type { Activity } from '@/types';
@@ -67,10 +67,9 @@ const updateStatus = async (client: Client): Promise<void> => {
 const beginStatusUpdates = (
   client: Client,
   intervalMs = 10 * 60 * 1000
-): Promise<void> => {
-  return updateStatus(client).then(() => {
+): Promise<void> =>
+  updateStatus(client).then(() => {
     setInterval(() => updateStatus(client), intervalMs);
   });
-};
 
 export { beginStatusUpdates, updateStatus };

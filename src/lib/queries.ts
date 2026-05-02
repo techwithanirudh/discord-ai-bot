@@ -1,6 +1,4 @@
-import {
-  type Message as DiscordMessage,
-} from 'discord.js-selfbot-v13';
+import type { Message as DiscordMessage } from 'discord.js-selfbot-v13';
 import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('queries');
