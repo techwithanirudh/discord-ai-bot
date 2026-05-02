@@ -1,7 +1,7 @@
-import { createLogger } from '@/lib/logger';
 import { tool } from 'ai';
-import type { Message } from 'discord.js-selfbot-v13';
-import { z } from 'zod/v4';
+import type { Message, User } from 'discord.js-selfbot-v13';
+import { z } from 'zod';
+import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('tools:start-dm');
 
@@ -16,7 +16,7 @@ export const startDM = ({ message }: { message: Message }) =>
     }),
     execute: async ({ userId, content }) => {
       try {
-        let user;
+        let user: User | undefined;
 
         try {
           user = await message.client.users.fetch(userId);
@@ -46,7 +46,7 @@ export const startDM = ({ message }: { message: Message }) =>
           const dm = await user.createDM();
           await dm.send(content);
         } catch {
-          await user.sendFriendRequest();
+          await user.sendFriendRequest().catch(() => null);
           return {
             success: false,
             error: 'Could not DM user, sent friend request instead',
@@ -74,7 +74,7 @@ export const startDM = ({ message }: { message: Message }) =>
           messageContent: content,
         };
       } catch (error) {
-        logger.error('Failed to start DM:', error);
+        logger.error({ error }, 'Failed to start DM:');
         return {
           success: false,
           error: 'Failed to send DM',

@@ -1,4 +1,4 @@
-<h1 align="center">AI Discord Bot</h4>
+<h1 align="center">Gork</h4>
 
 ## 📋 Table of Contents
 
@@ -10,7 +10,7 @@
 
 ## <a name="introduction">🤖 Introduction</a>
 
-A human-like bot that is almost indistinguishable from a real person.
+A human-like bot (called Gork) that is almost indistinguishable from a real person.
 
 ## <a name="tech-stack">🚀 Tech Stack</a>
 
@@ -23,7 +23,6 @@ This project was developed with the following technologies:
 - [Bun][bun]
 - [ESLint][eslint]
 - [Prettier][prettier]
-- Redis (plain, via ioredis)
 
 ## <a name="getting-started">📚 Getting Started</a>
 
@@ -40,15 +39,7 @@ $ bun install
 ```
 
 Next, copy the .env.example file, rename it to .env, and add your environment variables.
-
-Redis setup (required):
-
-- Install Redis locally or use a managed Redis that provides a standard redis:// URL
-- Set REDIS_URL in your .env, e.g.
-
-      redis://:password@localhost:6379/0
-
-  Great! Now you just need to start the development server.
+Great! Now you just need to start the development server.
 
 ```bash
 # Start server
@@ -87,31 +78,3 @@ This project is under the MIT license. See the [LICENSE](LICENSE) for details.
 [ai-sdk]: https://ai-sdk.dev/
 [bun]: https://bun.sh/
 [exa]: https://exa.ai/
-[redis]: https://redis.io/
-
-## Getting your Discord token:
-
-Run this in the console once you have opened Discord in a browser:
-
-```
-window.webpackChunkdiscord_app.push([
-    [Symbol()],
-    {},
-    req => {
-        if (!req.c) return;
-        for (let m of Object.values(req.c)) {
-            try {
-                if (!m.exports || m.exports === window) continue;
-                if (m.exports?.getToken) return copy(m.exports.getToken());
-                for (let ex in m.exports) {
-                    if (m.exports?.[ex]?.getToken && m.exports[ex][Symbol.toStringTag] !== 'IntlMessagesProxy') return copy(m.exports[ex].getToken());
-                }
-            } catch {}
-        }
-    },
-]);
-
-window.webpackChunkdiscord_app.pop();
-console.log('%cWorked!', 'font-size: 50px');
-console.log(`%cYou now have your token in the clipboard!`, 'font-size: 16px');
-```

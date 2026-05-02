@@ -1,7 +1,8 @@
+import { tool } from 'ai';
+import { z } from 'zod';
+import { formatMemories } from '@/lib/ai/memory/text';
 import { createLogger } from '@/lib/logger';
 import { queryMemories } from '@/lib/pinecone/operations';
-import { tool } from 'ai';
-import { z } from 'zod/v4';
 
 const logger = createLogger('tools:search-memories');
 
@@ -12,12 +13,18 @@ export const searchMemories = () =>
       query: z.string().describe('The text query to search for in memories'),
       limit: z
         .number()
+        .int()
+        .positive()
+        .max(20)
         .default(5)
-        .describe('Number of results to return (defaults to 5)'),
+        .describe('Number of results to return (defaults to 5, max 20)'),
       options: z
         .object({
-          ageLimit: z
+          // ageLimitDays converts to ms in the executor for clarity
+          ageLimitDays: z
             .number()
+            .int()
+            .positive()
             .optional()
             .describe(
               'Number of days to limit results to (e.g. 7 for last week)'
@@ -35,19 +42,29 @@ export const searchMemories = () =>
     }),
     execute: async ({ query, limit, options }) => {
       try {
+        if (!query || query.trim().length === 0) {
+          return {
+            success: true,
+            data: 'No query provided. Please provide a search term.',
+          };
+        }
+
         const results = await queryMemories(query, {
           limit,
-          ...options,
+          ageLimit: options?.ageLimitDays
+            ? options.ageLimitDays * 24 * 60 * 60 * 1000
+            : undefined,
+          ignoreRecent: options?.ignoreRecent,
+          onlyTools: options?.onlyTools,
         });
 
         logger.info({ results }, 'Memory search results');
 
+        const data = formatMemories(results);
+
         return {
           success: true,
-          data: results.map((result) => ({
-            score: result.score,
-            metadata: result.metadata,
-          })),
+          data,
         };
       } catch (error) {
         logger.error({ error }, 'Error in searchMemories tool');

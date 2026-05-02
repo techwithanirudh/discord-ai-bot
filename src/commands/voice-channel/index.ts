@@ -1,30 +1,30 @@
 import type {
   ApplicationCommandData,
   ApplicationCommandSubCommandData,
+  CommandInteraction,
 } from 'discord.js-selfbot-v13';
-import { CommandInteraction } from 'discord.js-selfbot-v13';
 import * as join from './join';
 import * as leave from './leave';
 
 export const data: ApplicationCommandData = {
   name: 'vc',
   description: 'Voice channel commands',
-  type: 1, // ChatInput
+  type: 1,
   options: [
     {
       name: 'join',
       description: 'Joins the voice channel that you are in',
-      type: 1, // Subcommand
+      type: 1,
     } as ApplicationCommandSubCommandData,
     {
       name: 'leave',
       description: 'Leave the voice channel',
-      type: 1, // Subcommand
+      type: 1,
     } as ApplicationCommandSubCommandData,
   ],
 };
 
-export async function execute(interaction: CommandInteraction) {
+export function execute(interaction: CommandInteraction) {
   const subcommand = interaction.options.getSubcommand();
 
   switch (subcommand) {

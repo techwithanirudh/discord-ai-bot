@@ -1,4 +1,3 @@
-import { createListeningStream } from '@/utils/voice/stream';
 import {
   createAudioPlayer,
   entersState,
@@ -6,19 +5,22 @@ import {
   joinVoiceChannel,
   VoiceConnectionStatus,
 } from '@discordjs/voice';
-import type { ApplicationCommandData } from 'discord.js-selfbot-v13';
-import { CommandInteraction } from 'discord.js-selfbot-v13';
+import type {
+  ApplicationCommandData,
+  CommandInteraction,
+} from 'discord.js-selfbot-v13';
+import { createListeningStream } from '@/utils/voice/stream';
 
 export const data: ApplicationCommandData = {
   name: 'join',
   description: 'Joins the voice channel that you are in',
-  type: 1, // ChatInput
+  type: 1,
 };
 
 export async function execute(interaction: CommandInteraction) {
   await interaction.deferReply();
 
-  if (!interaction.guild || !interaction.member) {
+  if (!(interaction.guild && interaction.member)) {
     await interaction.followUp('This command can only be used in a server.');
     return;
   }
@@ -60,6 +62,7 @@ export async function execute(interaction: CommandInteraction) {
     await interaction.followUp(
       "oops, idk what happened. I couldn't join the voice channel."
     );
+    return;
   }
 
   await interaction.followUp('thanks for inviting me! joined');

@@ -1,6 +1,6 @@
-import { systemPrompt } from '@/lib/ai/prompts';
-import { myProvider } from '@/lib/ai/providers';
 import { generateText } from 'ai';
+import { systemPrompt } from '@/lib/ai/prompts';
+import { provider } from '@/lib/ai/providers';
 
 // TODO: Add Memories, and other tools available in the AI provider
 // TODO: Add History from the VC Chat Channel
@@ -9,20 +9,21 @@ export async function getAIResponse(prompt: string): Promise<string> {
   const { text } = await generateText({
     system:
       systemPrompt({
-        selectedChatModel: 'chat-model',
+        agent: 'chat',
         requestHints: {
-          activity: 'none',
-          channel: 'voice',
-          city: 'Unknown',
-          country: 'Unknown',
-          joined: 0,
-          server: 'Unknown',
-          status: 'online',
           time: new Date().toISOString(),
+          city: undefined,
+          country: undefined,
+          server: 'Voice Channel',
+          channel: 'voice',
+          joined: Date.now(),
+          status: 'online',
+          activity: 'voice',
         },
+        message: undefined,
       }) +
       '\n\nYou are talking to a person through a call, do not use markdown formatting, or emojis.',
-    model: myProvider.languageModel('chat-model'),
+    model: provider.languageModel('chat-model'),
     prompt,
   });
 

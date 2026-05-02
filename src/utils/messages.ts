@@ -1,33 +1,36 @@
-import { createLogger } from '@/lib/logger';
-
 import type { FilePart, ModelMessage } from 'ai';
 import {
-  Message as DiscordMessage,
   type Collection,
-  type MessageAttachment as DiscordAttachment,
+  Message as DiscordMessage,
+  type MessageAttachment,
 } from 'discord.js-selfbot-v13';
+import { createLogger } from '@/lib/logger';
+import { buildUserMap, type UserMapEntry } from '@/utils/users';
 
 const logger = createLogger('utils:messages');
 
 interface MessageFormatOptions {
+  replacePings?: boolean;
   withAuthor?: boolean;
   withContext?: boolean;
+  withId?: boolean;
   withReactions?: boolean;
   withTimestamp?: boolean;
-  withId?: boolean;
 }
 
-function formatDiscordMessage(
+export function formatDiscordMessage(
   msg: DiscordMessage,
   ref: DiscordMessage | null = null,
-  options: MessageFormatOptions = {}
+  options: MessageFormatOptions = {},
+  userMap?: Map<string, UserMapEntry>
 ): string {
   const {
     withAuthor = true,
     withContext = true,
     withReactions = true,
     withTimestamp = false,
-    withId = true,
+    withId = false,
+    replacePings = true,
   } = options;
 
   let result = '';
@@ -54,7 +57,20 @@ function formatDiscordMessage(
     result += `(${context}) `;
   }
 
-  result += msg.content;
+  let processedContent = msg.content;
+
+  if (replacePings && userMap) {
+    processedContent = processedContent
+      .replace(/<@!?(\d+)>/g, (_, userId) => {
+        const user = userMap.get(userId);
+        return user ? `@${user.username}` : '@unknown';
+      })
+      .replace(/<@&(\d+)>/g, '@role')
+      .replace(/@everyone/g, '@everyone')
+      .replace(/@here/g, '@here');
+  }
+
+  result += processedContent;
 
   if (withReactions && msg.reactions.cache.size > 0) {
     const reactions = Array.from(msg.reactions.cache.values())
@@ -68,7 +84,9 @@ function formatDiscordMessage(
 
 export async function convertToModelMessages(
   messages: Collection<string, DiscordMessage<boolean>>
-): Promise<Array<ModelMessage>> {
+): Promise<ModelMessage[]> {
+  const userMap = buildUserMap(messages);
+
   return await Promise.all(
     messages.map(async (msg) => {
       const ref = msg.reference
@@ -76,13 +94,19 @@ export async function convertToModelMessages(
         : null;
 
       const isBot = msg.author.id === msg.client.user?.id;
-      const structuredText = formatDiscordMessage(msg, ref, {
-        withAuthor: true,
-        withContext: true,
-        withReactions: false,
-        withTimestamp: false,
-        withId: true,
-      });
+      const structuredText = formatDiscordMessage(
+        msg,
+        ref,
+        {
+          withAuthor: true,
+          withContext: true,
+          withReactions: true,
+          withTimestamp: false,
+          withId: false,
+          replacePings: true,
+        },
+        userMap
+      );
 
       if (isBot) {
         return {
@@ -97,7 +121,7 @@ export async function convertToModelMessages(
         role: 'user' as const,
         content: [
           { type: 'text' as const, text: structuredText },
-          ...(await processAttachments(msg.attachments)),
+          ...processAttachments(msg.attachments),
         ],
         createdAt: msg.createdAt,
         name: msg.author.username,
@@ -106,9 +130,9 @@ export async function convertToModelMessages(
   );
 }
 
-export async function processAttachments(
-  attachments: Collection<string, DiscordAttachment>
-): Promise<FilePart[]> {
+export function processAttachments(
+  attachments: Collection<string, MessageAttachment>
+): FilePart[] {
   const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
 
   const validAttachments = Array.from(attachments.values()).filter(
@@ -116,7 +140,7 @@ export async function processAttachments(
   );
 
   const invalidNames = attachments
-    .filter((a) => !a.contentType || !validTypes.includes(a.contentType))
+    .filter((a) => !(a.contentType && validTypes.includes(a.contentType)))
     .map((a) => a.name);
 
   if (invalidNames.length > 0) {

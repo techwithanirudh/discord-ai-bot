@@ -1,7 +1,7 @@
-import { createLogger } from '@/lib/logger';
 import { tool } from 'ai';
-import type { Message } from 'discord.js-selfbot-v13';
+import type { Message, User } from 'discord.js-selfbot-v13';
 import { z } from 'zod/v4';
+import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('tools:user-info');
 
@@ -16,7 +16,7 @@ export const getUserInfo = ({ message }: { message: Message }) =>
     }),
     execute: async ({ userId }) => {
       try {
-        let user;
+        let user: User | undefined;
 
         try {
           user = await message.client.users.fetch(userId);

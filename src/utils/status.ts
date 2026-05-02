@@ -1,23 +1,27 @@
+import type { ActivityType, PresenceStatusData } from 'discord.js-selfbot-v13';
+import { type Client, RichPresence } from 'discord.js-selfbot-v13';
 import { activities, statuses } from '@/config';
 import { createLogger } from '@/lib/logger';
-
-import type { ActivityType, PresenceStatusData } from 'discord.js-selfbot-v13';
-import { Client, RichPresence } from 'discord.js-selfbot-v13';
-
 import type { Activity } from '@/types';
 
 const logger = createLogger('status');
 
 const getRandomItem = <T>(arr: readonly T[]): T => {
-  if (arr.length === 0) throw new Error('Array must not be empty');
+  if (arr.length === 0) {
+    throw new Error('Array must not be empty');
+  }
   const randomIndex = Math.floor(Math.random() * arr.length);
   const item = arr[randomIndex];
-  if (item === undefined) throw new Error('Selected item is undefined');
+  if (item === undefined) {
+    throw new Error('Selected item is undefined');
+  }
   return item;
 };
 
 const updateStatus = async (client: Client): Promise<void> => {
-  if (!client.user) return;
+  if (!client.user) {
+    return;
+  }
 
   const status = getRandomItem(statuses) as PresenceStatusData;
   const activity = getRandomItem(activities) as Activity;
@@ -60,12 +64,12 @@ const updateStatus = async (client: Client): Promise<void> => {
   logger.info(`Status: ${status}, Activity: ${activity.name}`);
 };
 
-const beginStatusUpdates = async (
+const beginStatusUpdates = (
   client: Client,
   intervalMs = 10 * 60 * 1000
-): Promise<void> => {
-  await updateStatus(client);
-  setInterval(() => updateStatus(client), intervalMs);
-};
+): Promise<void> =>
+  updateStatus(client).then(() => {
+    setInterval(() => updateStatus(client), intervalMs);
+  });
 
 export { beginStatusUpdates, updateStatus };

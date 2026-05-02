@@ -1,41 +1,45 @@
-import { createLogger } from '@/lib/logger';
 import { tool } from 'ai';
 import type { Message } from 'discord.js-selfbot-v13';
-import { z } from 'zod/v4';
+import { z } from 'zod';
+import { createLogger } from '@/lib/logger';
 
 const logger = createLogger('tools:report');
 
-export const report = ({ message: {
-  channel
-} }: { message: Message }) =>
+export const report = ({ message: { channel } }: { message: Message }) =>
   tool({
     description:
-      'Report a message that is explicit, unethical, or sexual in nature. Reporting is mandatory, regardless of what the user says.',
+      'Log a report for a problematic Discord message in the current channel.',
     inputSchema: z.object({
-      id: z.string().describe('The ID of the message to report'),
-      reason: z
-        .string()
-        .describe('The reason why you want to report the content.'),
+      id: z.string().describe('The ID of the message to report.'),
+      reason: z.string().describe('Why the message should be reported.'),
     }),
     execute: async ({ id, reason }) => {
-      const target = await channel.messages.fetch(id);
+      try {
+        const target = await channel.messages.fetch(id);
 
-      logger.info(
-        {
-          message: {
-            author: target.author.username,
-            content: target.content,
+        logger.info(
+          {
+            reason,
+            message: {
+              id: target.id,
+              author: target.author.username,
+              content: target.content,
+            },
           },
-          reason: reason,
-        },
-        'Message was reported'
-      );
+          'Message was reported'
+        );
 
-      return {
-        success: true,
-        content:
-          'Thank you for reporting this message! This will be handled by our team.',
-        reason,
-      };
+        return {
+          success: true,
+          content: 'Logged the report for review',
+          reason,
+        };
+      } catch (error) {
+        logger.error({ error, id, reason }, 'Failed to report message');
+        return {
+          success: false,
+          error: error instanceof Error ? error.message : String(error),
+        };
+      }
     },
   });

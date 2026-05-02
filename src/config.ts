@@ -1,3 +1,4 @@
+import type { PresenceStatusData } from 'discord.js-selfbot-v13';
 import type { Activity } from './types';
 
 export const keywords = ['gork', 'grok'];
@@ -12,7 +13,12 @@ export const speed = {
   speedFactor: 180 * 180,
 };
 
-export const statuses = ['online', 'idle', 'dnd', 'offline'];
+export const statuses: PresenceStatusData[] = [
+  'online',
+  'idle',
+  'dnd',
+  'invisible',
+];
 
 export const activities: Activity[] = [
   {
@@ -43,4 +49,9 @@ export const messageThreshold = 10;
 
 export const voice = {
   model: 'aura-arcas-en',
+};
+
+export const memories = {
+  eachLimit: 2,
+  maxMemories: 4,
 };

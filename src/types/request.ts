@@ -1,12 +1,12 @@
 import type { Geo } from '@vercel/functions';
 
 export interface RequestHints {
-  time: string;
+  activity: string;
+  channel: string;
   city: Geo['city'];
   country: Geo['country'];
-  server: string;
-  channel: string;
   joined: number;
+  server: string;
   status: string;
-  activity: string;
+  time: string;
 }

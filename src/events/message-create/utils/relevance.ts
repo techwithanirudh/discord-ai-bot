@@ -1,13 +1,9 @@
-import { systemPrompt } from '@/lib/ai/prompts';
-import { myProvider } from '@/lib/ai/providers';
-import { createLogger } from '@/lib/logger';
-
-import { probabilitySchema, type Probability } from '@/lib/validators';
-import type { RequestHints } from '@/types';
-import { generateObject, type ModelMessage } from 'ai';
+import type { ModelMessage } from 'ai';
 import type { Message } from 'discord.js-selfbot-v13';
-
-import { jsonrepair } from 'jsonrepair';
+import { relevanceAgent } from '@/lib/ai/agents/relevance';
+import { createLogger } from '@/lib/logger';
+import type { Probability } from '@/lib/validators/probability';
+import type { RequestHints } from '@/types';
 
 const logger = createLogger('events:message:relevance');
 
@@ -17,47 +13,24 @@ export async function assessRelevance(
   hints: RequestHints
 ): Promise<Probability> {
   try {
-    const { object } = await generateObject({
-      model: myProvider.languageModel('relevance-model'),
-      messages,
-      schema: probabilitySchema,
-      system: systemPrompt({
-        selectedChatModel: 'relevance-model',
-        requestHints: hints,
-      }),
-      experimental_repairText: async ({ text, error }) => {
-        logger.info({ originalText: text, error }, '[repairText] invoked');
-
-        try {
-          const repaired = jsonrepair(text);
-
-          const parsed = JSON.parse(repaired);
-          const result = probabilitySchema.parse(parsed);
-
-          return JSON.stringify(result);
-        } catch (err) {
-          logger.error({ err }, '[repairText] repair failed, falling back to model');
-
-          const { object: repaired } = await generateObject({
-            model: myProvider.languageModel('chat-model'),
-            schema: probabilitySchema,
-            prompt: [
-              'The model tried to output JSON with the following data:',
-              text,
-              'and encountered an error:',
-              JSON.stringify(error?.cause),
-              'The tool accepts the following schema:',
-              `{ "probability": number, "reason": string }`,
-              'Please fix the outputs.',
-            ].join('\n'),
-          });
-
-          return JSON.stringify(repaired);
-        }
-      },
-      mode: 'json',
+    const agent = relevanceAgent({ message: msg, hints });
+    const { toolCalls } = await agent.generate({
+      messages: [
+        ...messages,
+        {
+          role: 'user',
+          content: `Analyze the following message and assess its relevance: ${msg.content}`,
+        },
+      ],
     });
-    return object;
+
+    const answer = (toolCalls.find((c) => c.toolName === 'relevance')
+      ?.input as Probability) ?? {
+      probability: 0.5,
+      reason: 'Unable to determine relevance',
+    };
+
+    return { ...answer };
   } catch (error) {
     logger.error({ error }, 'Failed to assess relevance');
     return {

@@ -1,17 +1,16 @@
+import type { ScoredPineconeRecord } from '@pinecone-database/pinecone';
 import { createLogger } from '@/lib/logger';
-
 import type { PineconeMetadataOutput } from '@/types';
-import { type ScoredPineconeRecord } from '@pinecone-database/pinecone';
 import { getIndex } from './index';
 import { searchMemories } from './queries';
 
 const logger = createLogger('pinecone:operations');
 
 export interface QueryMemoriesOptions {
-  namespace?: string;
-  limit?: number;
   ageLimit?: number;
   ignoreRecent?: boolean;
+  limit?: number;
+  namespace?: string;
   onlyTools?: boolean;
 }
 
@@ -25,8 +24,12 @@ export const queryMemories = async (
     onlyTools = false,
   }: QueryMemoriesOptions = {}
 ): Promise<ScoredPineconeRecord<PineconeMetadataOutput>[]> => {
+  if (!query || query.trim().length === 0) {
+    return [];
+  }
+
   const now = Date.now();
-  const filter: Record<string, any> = {};
+  const filter: Record<string, unknown> = {};
 
   if (ignoreRecent) {
     filter.createdAt = { $lt: now - 60_000 };
@@ -34,7 +37,7 @@ export const queryMemories = async (
 
   if (ageLimit != null) {
     filter.createdAt = {
-      ...filter.createdAt,
+      ...(filter.createdAt || {}),
       $gt: now - ageLimit,
     };
   }
