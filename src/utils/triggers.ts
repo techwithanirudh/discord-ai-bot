@@ -1,6 +1,6 @@
 import { Message } from 'discord.js-selfbot-v13';
 
-export type TriggerType = 'ping' | 'keyword' | 'dm' | null;
+export type TriggerType = 'ping' | 'keyword' | null;
 
 export async function getTrigger(
   message: Message,
@@ -21,9 +21,6 @@ export async function getTrigger(
   );
   if (matchedKeywords.length > 0) {
     return { type: 'keyword', info: matchedKeywords };
-  }
-  if (!message.guild) {
-    return { type: 'dm', info: message.author.username };
   }
   return { type: null, info: null };
 }
